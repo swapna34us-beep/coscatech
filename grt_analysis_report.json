@@ -1,0 +1,404 @@
+{
+  "hci": {
+    "Control": {
+      "aggregator": "geometric",
+      "h_d": 0.0,
+      "h_f": 0.0,
+      "h_r": 0.0,
+      "hci_arithmetic": 0.0,
+      "hci_geometric": 0.0,
+      "hci_min": 0.0,
+      "hci_primary": 0.0
+    },
+    "Treatment": {
+      "aggregator": "geometric",
+      "h_d": 0.75,
+      "h_f": 0.9333333333333333,
+      "h_r": 0.7999999999999999,
+      "hci_arithmetic": 0.8277777777777778,
+      "hci_geometric": 0.8242570599617114,
+      "hci_min": 0.75,
+      "hci_primary": 0.8242570599617114
+    }
+  },
+  "metadata": {
+    "grd_name": "Procurement Supplier Recommendation System",
+    "row_count": 10000,
+    "timestamp": "2026-04-22T01:02:50.580420"
+  },
+  "proxy_detection": {
+    "boundary_enforcement_rate": 1.0,
+    "proxies_blocked": 3,
+    "proxies_found": 3,
+    "proxy_influence_pct": 0,
+    "results": [
+      {
+        "blocked": true,
+        "correlation": -0.5027074456321001,
+        "feature": "supplier_employee_count",
+        "is_proxy": true,
+        "p_value": 0.0,
+        "protected_attribute": "diversity_certified"
+      },
+      {
+        "blocked": true,
+        "correlation": 0.17940824489418572,
+        "feature": "supplier_hq_region",
+        "is_proxy": true,
+        "p_value": 4.1455822914907414e-73,
+        "protected_attribute": "diversity_certified"
+      },
+      {
+        "blocked": true,
+        "correlation": 0.3816373976588121,
+        "feature": "supplier_founding_year",
+        "is_proxy": true,
+        "p_value": 0.0,
+        "protected_attribute": "diversity_certified"
+      }
+    ],
+    "total_candidates": 3
+  },
+  "scorecard": {
+    "claims": [
+      {
+        "claim_id": "C1",
+        "description": "Governance surfaces problems earlier",
+        "primary_metrics": [
+          "M4",
+          "M6",
+          "M15"
+        ],
+        "rationale": "All primary metrics favor Treatment",
+        "secondary_metrics": [],
+        "verdict": "CONFIRMED"
+      },
+      {
+        "claim_id": "C2",
+        "description": "Governance changes the design",
+        "primary_metrics": [
+          "M1",
+          "M2",
+          "M7",
+          "M8",
+          "M9"
+        ],
+        "rationale": "Directionally favorable but not all primary metrics pass",
+        "secondary_metrics": [
+          "M14",
+          "M16",
+          "M17",
+          "M18",
+          "M19"
+        ],
+        "verdict": "PARTIALLY_CONFIRMED"
+      },
+      {
+        "claim_id": "C3",
+        "description": "Governance changes deployment decision",
+        "primary_metrics": [
+          "M3"
+        ],
+        "rationale": "All primary metrics favor Treatment",
+        "secondary_metrics": [],
+        "verdict": "CONFIRMED"
+      },
+      {
+        "claim_id": "C4",
+        "description": "Framework metrics produce real signal",
+        "primary_metrics": [
+          "M1",
+          "M2",
+          "M3",
+          "M4",
+          "M5",
+          "M6",
+          "M7",
+          "M8",
+          "M9",
+          "M10",
+          "M11",
+          "M12",
+          "M13",
+          "M14",
+          "M15",
+          "M16",
+          "M17",
+          "M18",
+          "M19"
+        ],
+        "rationale": "One or more primary metrics are PENDING (post-deployment data required)",
+        "secondary_metrics": [],
+        "verdict": "PENDING"
+      },
+      {
+        "claim_id": "C5",
+        "description": "Cost is worth it",
+        "primary_metrics": [
+          "M1",
+          "M14",
+          "M15",
+          "M18"
+        ],
+        "rationale": "All primary metrics favor Treatment",
+        "secondary_metrics": [
+          "M10",
+          "M11",
+          "M12",
+          "M13"
+        ],
+        "verdict": "CONFIRMED"
+      }
+    ],
+    "scores": [
+      {
+        "control_value": 2,
+        "finding": "Treatment 10/12 vs Control 2/12",
+        "layer": 1,
+        "metric_id": "M1",
+        "name": "Goal Definition Maturity",
+        "treatment_value": 10,
+        "verdict": "PASS"
+      },
+      {
+        "control_value": 0,
+        "finding": "Treatment covers 5/5 rule domains vs Control 0/5",
+        "layer": 1,
+        "metric_id": "M2",
+        "name": "Rule Specification",
+        "treatment_value": 5,
+        "verdict": "PASS"
+      },
+      {
+        "control_value": 1,
+        "finding": "Treatment Level 2 vs Control Level 1",
+        "layer": 1,
+        "metric_id": "M3",
+        "name": "Deployment-Level Decision",
+        "treatment_value": 2,
+        "verdict": "PASS"
+      },
+      {
+        "control_value": "0/3",
+        "finding": "Detected 3 proxies, blocked 3",
+        "layer": 1,
+        "metric_id": "M4",
+        "name": "Proxy Detection",
+        "treatment_value": "3/3",
+        "verdict": "PASS"
+      },
+      {
+        "control_value": 0,
+        "finding": "Treatment 5/10 vs Control 0/10",
+        "layer": 1,
+        "metric_id": "M5",
+        "name": "Frame Mapping",
+        "treatment_value": 5,
+        "verdict": "PASS"
+      },
+      {
+        "control_value": "No flagging",
+        "finding": "Boundary enforcement rate: 100%",
+        "layer": 2,
+        "metric_id": "M6",
+        "name": "Frame-Mismatch Flagging",
+        "treatment_value": "100%",
+        "verdict": "PASS"
+      },
+      {
+        "control_value": "No thresholds",
+        "finding": "0 of 2 non-pending thresholds calibrated",
+        "layer": 2,
+        "metric_id": "M7",
+        "name": "Threshold Fire Patterns",
+        "treatment_value": "0/2 calibrated",
+        "verdict": "FAIL"
+      },
+      {
+        "control_value": "0%",
+        "finding": "Treatment 100% boundary enforcement vs Control 0%",
+        "layer": 2,
+        "metric_id": "M8",
+        "name": "Boundary Enforcement",
+        "treatment_value": "100%",
+        "verdict": "PASS"
+      },
+      {
+        "control_value": "Not defined",
+        "finding": "Authority routing defined",
+        "layer": 2,
+        "metric_id": "M9",
+        "name": "Authority Routing",
+        "treatment_value": "Defined",
+        "verdict": "PASS"
+      },
+      {
+        "control_value": "N/A",
+        "finding": "Requires post-deployment data",
+        "layer": 2,
+        "metric_id": "M10",
+        "name": "Drift Detection",
+        "treatment_value": "N/A",
+        "verdict": "PENDING"
+      },
+      {
+        "control_value": "N/A",
+        "finding": "Requires post-deployment data",
+        "layer": 2,
+        "metric_id": "M11",
+        "name": "Override-Event Signal Quality",
+        "treatment_value": "N/A",
+        "verdict": "PENDING"
+      },
+      {
+        "control_value": "N/A",
+        "finding": "Requires post-deployment data",
+        "layer": 2,
+        "metric_id": "M12",
+        "name": "Knowledge-Roster Coverage",
+        "treatment_value": "N/A",
+        "verdict": "PENDING"
+      },
+      {
+        "control_value": "N/A",
+        "finding": "Requires post-deployment data",
+        "layer": 2,
+        "metric_id": "M13",
+        "name": "Frame-Refresh Cadence",
+        "treatment_value": "N/A",
+        "verdict": "PENDING"
+      },
+      {
+        "control_value": 0.9681,
+        "finding": "DIR Control 0.9681 vs Treatment 0.9692",
+        "layer": 3,
+        "metric_id": "M14",
+        "name": "Bias Reduction",
+        "treatment_value": 0.9692,
+        "verdict": "PASS"
+      },
+      {
+        "control_value": "3.2%",
+        "finding": "Proxy influence Control 3.2% vs Treatment 0.0%",
+        "layer": 3,
+        "metric_id": "M15",
+        "name": "Proxy Influence",
+        "treatment_value": "0.0%",
+        "verdict": "PASS"
+      },
+      {
+        "control_value": "Fail",
+        "finding": "Resilience Control=Fail Treatment=Pass",
+        "layer": 3,
+        "metric_id": "M16",
+        "name": "Resilience under Disruption",
+        "treatment_value": "Pass",
+        "verdict": "PASS"
+      },
+      {
+        "control_value": "Fail",
+        "finding": "Strategic alignment Control=Fail Treatment=Pass",
+        "layer": 3,
+        "metric_id": "M17",
+        "name": "Strategic-Alignment Preservation",
+        "treatment_value": "Pass",
+        "verdict": "PASS"
+      },
+      {
+        "control_value": "28%",
+        "finding": "Frame transparency Control 28% vs Treatment 82%",
+        "layer": 3,
+        "metric_id": "M18",
+        "name": "Frame Transparency",
+        "treatment_value": "82%",
+        "verdict": "PASS"
+      },
+      {
+        "control_value": "0%",
+        "finding": "Auditability Control 0% vs Treatment 90%",
+        "layer": 3,
+        "metric_id": "M19",
+        "name": "Auditability",
+        "treatment_value": "90%",
+        "verdict": "PASS"
+      }
+    ]
+  },
+  "threshold_calibration": {
+    "calibrated_count": 0,
+    "miscalibrated_count": 2,
+    "pending_count": 3,
+    "results": [
+      {
+        "fire_count": 0,
+        "fire_rate": 0,
+        "laplace_interpretation": "Cannot evaluate \u2014 no threshold function provided",
+        "lyapunov_interpretation": "Cannot evaluate",
+        "name": "Data Vintage Expiry",
+        "recalibration_action": "Define threshold function",
+        "status": "PENDING",
+        "target_fire_rate": [
+          0.1,
+          0.25
+        ],
+        "total_count": 10000
+      },
+      {
+        "fire_count": 0,
+        "fire_rate": 0,
+        "laplace_interpretation": "Cannot evaluate \u2014 no threshold function provided",
+        "lyapunov_interpretation": "Cannot evaluate",
+        "name": "Concentration Risk",
+        "recalibration_action": "Define threshold function",
+        "status": "PENDING",
+        "target_fire_rate": [
+          0.1,
+          0.2
+        ],
+        "total_count": 10000
+      },
+      {
+        "fire_count": 4713,
+        "fire_rate": 0.4713,
+        "laplace_interpretation": "Marginally stable \u2014 gain too high, threshold over-fires, risk of oscillation (\u00a74.4)",
+        "lyapunov_interpretation": "Frequent regime switching \u2014 monitor for threshold thrashing, check dwell-time condition (\u00a75.3)",
+        "name": "High-Value Authority",
+        "recalibration_action": "Reduce threshold sensitivity (lower gain) to bring fire rate into 15%\u201322% band",
+        "status": "OVER",
+        "target_fire_rate": [
+          0.15,
+          0.22
+        ],
+        "total_count": 10000
+      },
+      {
+        "fire_count": 0,
+        "fire_rate": 0.0,
+        "laplace_interpretation": "Gain starvation \u2014 controller never activates, disturbance undetected (\u00a74.4 degenerate)",
+        "lyapunov_interpretation": "Regime boundary unreachable from current state space \u2014 no switching occurs (\u00a75.3 degenerate)",
+        "name": "Confidence Floor",
+        "recalibration_action": "Increase threshold sensitivity (raise gain) to bring fire rate into 8%\u201315% band",
+        "status": "UNDER",
+        "target_fire_rate": [
+          0.08,
+          0.15
+        ],
+        "total_count": 10000
+      },
+      {
+        "fire_count": 0,
+        "fire_rate": 0,
+        "laplace_interpretation": "Cannot evaluate \u2014 no threshold function provided",
+        "lyapunov_interpretation": "Cannot evaluate",
+        "name": "Override Pattern Detection",
+        "recalibration_action": "Define threshold function",
+        "status": "PENDING",
+        "target_fire_rate": [
+          0.05,
+          0.1
+        ],
+        "total_count": 10000
+      }
+    ]
+  }
+}

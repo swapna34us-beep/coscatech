@@ -1,0 +1,106 @@
+======================================================================
+  GRT ANALYSIS REPORT
+  GRD: Procurement Supplier Recommendation System
+  Generated: 2026-04-22T01:02:50.578445
+======================================================================
+
+PROXY DETECTION SUMMARY
+----------------------------------------------------------------------
+Candidates scanned:   3
+Proxies found:        3
+Proxies blocked:      3
+Proxy influence:      0.0%
+Boundary enforcement: 100%
+
+  supplier_employee_count <-> diversity_certified: r=-0.503 (p=0.0000) [BLOCKED]
+  supplier_hq_region <-> diversity_certified: r=0.179 (p=0.0000) [BLOCKED]
+  supplier_founding_year <-> diversity_certified: r=0.382 (p=0.0000) [BLOCKED]
+
+THRESHOLD CALIBRATION
+----------------------------------------------------------------------
+Calibrated:    0
+Miscalibrated: 2
+Pending:       3
+
+  Data Vintage Expiry — fire rate: 0.0% (target: 10%-25%) -> PENDING
+    Laplace:  Cannot evaluate — no threshold function provided
+    Lyapunov: Cannot evaluate
+    Action:   Define threshold function
+
+  Concentration Risk — fire rate: 0.0% (target: 10%-20%) -> PENDING
+    Laplace:  Cannot evaluate — no threshold function provided
+    Lyapunov: Cannot evaluate
+    Action:   Define threshold function
+
+  High-Value Authority — fire rate: 47.1% (target: 15%-22%) -> OVER
+    Laplace:  Marginally stable — gain too high, threshold over-fires, risk of oscillation (§4.4)
+    Lyapunov: Frequent regime switching — monitor for threshold thrashing, check dwell-time condition (§5.3)
+    Action:   Reduce threshold sensitivity (lower gain) to bring fire rate into 15%–22% band
+
+  Confidence Floor — fire rate: 0.0% (target: 8%-15%) -> UNDER
+    Laplace:  Gain starvation — controller never activates, disturbance undetected (§4.4 degenerate)
+    Lyapunov: Regime boundary unreachable from current state space — no switching occurs (§5.3 degenerate)
+    Action:   Increase threshold sensitivity (raise gain) to bring fire rate into 8%–15% band
+
+  Override Pattern Detection — fire rate: 0.0% (target: 5%-10%) -> PENDING
+    Laplace:  Cannot evaluate — no threshold function provided
+    Lyapunov: Cannot evaluate
+    Action:   Define threshold function
+
+HCI COMPARISON
+----------------------------------------------------------------------
+HCI COMPARISON
+============================================================
+
+System                       H_F    H_D    H_R      HCI
+------------------------------------------------------------
+Control                     0.00   0.00   0.00    0.000
+Treatment                   0.93   0.75   0.80    0.824
+
+19-METRIC SCORECARD
+----------------------------------------------------------------------
+ID     Name                                Layer      Control    Treatment      Verdict
+----------------------------------------------------------------------
+M1     Goal Definition Maturity                1            2           10         PASS
+M2     Rule Specification                      1            0            5         PASS
+M3     Deployment-Level Decision               1            1            2         PASS
+M4     Proxy Detection                         1          0/3          3/3         PASS
+M5     Frame Mapping                           1            0            5         PASS
+M6     Frame-Mismatch Flagging                 2  No flagging         100%         PASS
+M7     Threshold Fire Patterns                 2 No threshold 0/2 calibrat         FAIL
+M8     Boundary Enforcement                    2           0%         100%         PASS
+M9     Authority Routing                       2  Not defined      Defined         PASS
+M10    Drift Detection                         2          N/A          N/A      PENDING
+M11    Override-Event Signal Quality           2          N/A          N/A      PENDING
+M12    Knowledge-Roster Coverage               2          N/A          N/A      PENDING
+M13    Frame-Refresh Cadence                   2          N/A          N/A      PENDING
+M14    Bias Reduction                          3       0.9681       0.9692         PASS
+M15    Proxy Influence                         3         3.2%         0.0%         PASS
+M16    Resilience under Disruption             3         Fail         Pass         PASS
+M17    Strategic-Alignment Preservation        3         Fail         Pass         PASS
+M18    Frame Transparency                      3          28%          82%         PASS
+M19    Auditability                            3           0%          90%         PASS
+
+CLAIM VERDICTS
+----------------------------------------------------------------------
+C1 — Governance surfaces problems earlier -> CONFIRMED
+  Primary metrics:   M4, M6, M15
+  Rationale: All primary metrics favor Treatment
+
+C2 — Governance changes the design -> PARTIALLY_CONFIRMED
+  Primary metrics:   M1, M2, M7, M8, M9
+  Secondary metrics: M14, M16, M17, M18, M19
+  Rationale: Directionally favorable but not all primary metrics pass
+
+C3 — Governance changes deployment decision -> CONFIRMED
+  Primary metrics:   M3
+  Rationale: All primary metrics favor Treatment
+
+C4 — Framework metrics produce real signal -> PENDING
+  Primary metrics:   M1, M2, M3, M4, M5, M6, M7, M8, M9, M10, M11, M12, M13, M14, M15, M16, M17, M18, M19
+  Rationale: One or more primary metrics are PENDING (post-deployment data required)
+
+C5 — Cost is worth it -> CONFIRMED
+  Primary metrics:   M1, M14, M15, M18
+  Secondary metrics: M10, M11, M12, M13
+  Rationale: All primary metrics favor Treatment
