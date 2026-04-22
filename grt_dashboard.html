@@ -160,6 +160,90 @@ body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,sans-serif;b
 <div class="info"><strong>The question:</strong> Both systems have a "human in the loop" — the buyer reviews recommendations. But how much does the human actually contribute? HCI measures three dimensions: did a human set the goal (H_F)? Where in the process does the human sit (H_D)? Does the human see what the model dropped (H_R)?</div>
 <div class="example"><strong>Concrete example:</strong> When BYR_009 reviews SmallSupplier_007's recommendation, the Control system shows a ranked list. The Treatment system shows the ranked list PLUS: "This recommendation is based on cost and delivery data from 2020–2026. The model cannot see: relationship history (4.9 years), buyer trust (5.21), disruption resilience (4.09), or strategic alignment. The buyer has authority to override." That's the difference HCI measures.</div>
 <div class="hg" id="hciBox"></div>
+
+<div class="card"><div class="ch">HCI Calculator — Try It Yourself</div><div class="cb">
+<div style="font-size:11px;color:#666;margin-bottom:10px">Adjust the sliders to see how HCI changes. HCI = (H<sub>F</sub> × H<sub>D</sub> × H<sub>R</sub>)<sup>1/3</sup> — if any sub-index is zero, HCI is zero.</div>
+
+<div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:12px">
+<div style="background:#f5f8fc;padding:10px;border-radius:6px">
+  <div style="font-size:10px;font-weight:700;color:#1B3A5C;margin-bottom:6px">H<sub>F</sub> — FRAME CONTRIBUTION</div>
+  <label style="font-size:10px;display:block;margin-bottom:4px">Authorship (0 or 1): Did a human author the goal?
+    <select id="hci-auth" onchange="calcHCI()" style="width:100%;padding:3px;font-size:11px;margin-top:2px">
+      <option value="0">0 — No (model default)</option>
+      <option value="1" selected>1 — Yes (human authored)</option>
+    </select>
+  </label>
+  <label style="font-size:10px;display:block;margin-bottom:4px">Documentation (0–1): How complete is the goal doc?
+    <input type="range" id="hci-doc" min="0" max="100" value="80" oninput="calcHCI()" style="width:100%">
+    <span id="hci-doc-val" style="font-size:10px;color:#666">0.80</span>
+  </label>
+  <label style="font-size:10px;display:block">Challenge (0 or 1): Can the frame be challenged?
+    <select id="hci-chal" onchange="calcHCI()" style="width:100%;padding:3px;font-size:11px;margin-top:2px">
+      <option value="0">0 — No challenge procedure</option>
+      <option value="1" selected>1 — Challenge procedure exists</option>
+    </select>
+  </label>
+  <div style="margin-top:8px;text-align:center;font-size:18px;font-weight:700;color:#1B3A5C" id="hci-hf-out">0.93</div>
+</div>
+
+<div style="background:#f5f8fc;padding:10px;border-radius:6px">
+  <div style="font-size:10px;font-weight:700;color:#1B3A5C;margin-bottom:6px">H<sub>D</sub> — DECISION CONTRIBUTION</div>
+  <label style="font-size:10px;display:block;margin-bottom:4px">Decision Position: Where does the human sit?
+    <select id="hci-pos" onchange="calcHCI()" style="width:100%;padding:3px;font-size:11px;margin-top:2px">
+      <option value="0.00">None (0.00) — no human involvement</option>
+      <option value="0.10">Post-hoc audit (0.10)</option>
+      <option value="0.25">Post-execution review (0.25)</option>
+      <option value="0.50">Real-time on-demand (0.50)</option>
+      <option value="0.75" selected>Real-time active (0.75)</option>
+      <option value="1.00">Pre-execution (1.00)</option>
+    </select>
+  </label>
+  <div style="font-size:10px;color:#666;margin-top:4px">
+    Pre-execution: human decides before AI acts<br>
+    RT active: human reviews each recommendation<br>
+    RT on-demand: human can intervene if needed<br>
+    Post-execution: human reviews after the fact<br>
+    Post-hoc audit: human audits logs later<br>
+    None: no human in the loop
+  </div>
+  <div style="margin-top:8px;text-align:center;font-size:18px;font-weight:700;color:#1B3A5C" id="hci-hd-out">0.75</div>
+</div>
+
+<div style="background:#f5f8fc;padding:10px;border-radius:6px">
+  <div style="font-size:10px;font-weight:700;color:#1B3A5C;margin-bottom:6px">H<sub>R</sub> — RESIDUE CONTRIBUTION</div>
+  <label style="font-size:10px;display:block;margin-bottom:4px">Surfacing (0–1): Does the human see what was dropped?
+    <input type="range" id="hci-surf" min="0" max="100" value="90" oninput="calcHCI()" style="width:100%">
+    <span id="hci-surf-val" style="font-size:10px;color:#666">0.90</span>
+  </label>
+  <label style="font-size:10px;display:block;margin-bottom:4px">Authorization (0–1): Can the human authorize residue items?
+    <input type="range" id="hci-authz" min="0" max="100" value="80" oninput="calcHCI()" style="width:100%">
+    <span id="hci-authz-val" style="font-size:10px;color:#666">0.80</span>
+  </label>
+  <label style="font-size:10px;display:block">Timeliness (0–1): Is residue shown at decision time?
+    <input type="range" id="hci-time" min="0" max="100" value="70" oninput="calcHCI()" style="width:100%">
+    <span id="hci-time-val" style="font-size:10px;color:#666">0.70</span>
+  </label>
+  <div style="margin-top:8px;text-align:center;font-size:18px;font-weight:700;color:#1B3A5C" id="hci-hr-out">0.80</div>
+</div>
+</div>
+
+<div style="text-align:center;margin-top:14px;padding:14px;background:#EBF3FB;border-radius:8px">
+  <div style="font-size:11px;color:#666;margin-bottom:4px">HCI = (H<sub>F</sub> × H<sub>D</sub> × H<sub>R</sub>)<sup>1/3</sup></div>
+  <div style="font-size:11px;color:#666" id="hci-formula">= (0.93 × 0.75 × 0.80)<sup>1/3</sup></div>
+  <div style="font-size:36px;font-weight:700;color:#1F7A4D" id="hci-result">0.824</div>
+  <div style="font-size:10px;color:#666" id="hci-interp">Strong human governance contribution</div>
+</div>
+
+<div style="margin-top:10px;font-size:11px;color:#666">
+  <strong>Try these scenarios:</strong><br>
+  • Set all to zero → HCI = 0.000 (no governance)<br>
+  • Set authorship=0, keep everything else → HCI = 0.000 (geometric mean kills it — no frame author means no governance)<br>
+  • Set position to "None" → HCI = 0.000 (human not in the loop at all)<br>
+  • Set position to "Pre-execution" → HCI increases (human decides before AI acts)<br>
+  • Set surfacing to 0 → HCI = 0.000 (human can't see what was dropped)
+</div>
+</div></div>
+
 </div></div>
 
 <!-- PHASE 4: 19 METRICS -->
@@ -708,6 +792,51 @@ function renderVerdicts() {
 function toggle(id) {
   const el = document.getElementById(id);
   if (el) el.classList.toggle('open');
+}
+
+function calcHCI() {
+  const auth = parseFloat(document.getElementById('hci-auth').value);
+  const doc = document.getElementById('hci-doc').value / 100;
+  const chal = parseFloat(document.getElementById('hci-chal').value);
+  const pos = parseFloat(document.getElementById('hci-pos').value);
+  const surf = document.getElementById('hci-surf').value / 100;
+  const authz = document.getElementById('hci-authz').value / 100;
+  const time = document.getElementById('hci-time').value / 100;
+
+  document.getElementById('hci-doc-val').textContent = doc.toFixed(2);
+  document.getElementById('hci-surf-val').textContent = surf.toFixed(2);
+  document.getElementById('hci-authz-val').textContent = authz.toFixed(2);
+  document.getElementById('hci-time-val').textContent = time.toFixed(2);
+
+  const hf = (auth + doc + chal) / 3;
+  const hd = pos;
+  const hr = (surf + authz + time) / 3;
+
+  document.getElementById('hci-hf-out').textContent = hf.toFixed(2);
+  document.getElementById('hci-hd-out').textContent = hd.toFixed(2);
+  document.getElementById('hci-hr-out').textContent = hr.toFixed(2);
+
+  let hci;
+  if (hf > 0 && hd > 0 && hr > 0) {
+    hci = Math.pow(hf * hd * hr, 1/3);
+  } else {
+    hci = 0;
+  }
+
+  document.getElementById('hci-formula').innerHTML =
+    '= (' + hf.toFixed(2) + ' &times; ' + hd.toFixed(2) + ' &times; ' + hr.toFixed(2) + ')<sup>1/3</sup>';
+  document.getElementById('hci-result').textContent = hci.toFixed(3);
+  document.getElementById('hci-result').style.color =
+    hci === 0 ? '#C0392B' : (hci < 0.3 ? '#C55A11' : '#1F7A4D');
+
+  let interp;
+  if (hci === 0) interp = 'No governance — at least one dimension is zero';
+  else if (hci < 0.2) interp = 'Minimal human contribution';
+  else if (hci < 0.4) interp = 'Low human contribution';
+  else if (hci < 0.6) interp = 'Moderate human contribution';
+  else if (hci < 0.8) interp = 'Strong human contribution';
+  else interp = 'Very strong human governance contribution';
+  document.getElementById('hci-interp').textContent = interp;
 }
 
 function run() {
