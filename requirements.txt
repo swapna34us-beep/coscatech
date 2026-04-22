@@ -1,0 +1,13 @@
+pandas>=2.0.0
+numpy>=1.24.0
+scipy>=1.11.0
+scikit-learn>=1.3.0
+
+# Optional — for notebooks and visualization
+matplotlib>=3.7.0
+seaborn>=0.12.0
+jupyter>=1.0.0
+
+# Development
+pytest>=7.4.0
+hypothesis>=6.82.0
