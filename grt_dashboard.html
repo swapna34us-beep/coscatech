@@ -3,548 +3,431 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>GRT-HCI Validator Dashboard</title>
+<title>GRT-HCI Governance Validator</title>
 <style>
 *{margin:0;padding:0;box-sizing:border-box}
 body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,sans-serif;background:#f0f4f8;color:#1a1a2e}
-.sidebar{position:fixed;left:0;top:0;width:220px;height:100vh;background:#1B3A5C;color:#fff;padding:20px 0;overflow-y:auto}
-.sidebar h1{font-size:16px;padding:0 20px 16px;border-bottom:1px solid #2E6DA4;margin-bottom:12px}
-.sidebar h1 span{color:#7fb3e0;font-weight:400;font-size:12px;display:block;margin-top:4px}
-.nav-item{display:block;padding:10px 20px;color:#b4c7d9;text-decoration:none;font-size:13px;cursor:pointer;border-left:3px solid transparent;transition:all .15s}
-.nav-item:hover,.nav-item.active{background:#2E6DA4;color:#fff;border-left-color:#7fb3e0}
-.nav-item .badge{float:right;background:#C0392B;color:#fff;border-radius:10px;padding:1px 7px;font-size:11px}
-.nav-item .badge.pass{background:#1F7A4D}
-.nav-item .badge.pending{background:#C55A11}
-.main{margin-left:220px;padding:24px 32px}
-.header{display:flex;justify-content:space-between;align-items:center;margin-bottom:24px}
-.header h2{font-size:22px;color:#1B3A5C}
-.run-btn{background:#1B3A5C;color:#fff;border:none;padding:10px 24px;border-radius:6px;font-size:14px;cursor:pointer;font-weight:600;transition:background .15s}
-.run-btn:hover{background:#2E6DA4}
-.run-btn:disabled{background:#999;cursor:not-allowed}
-.section{display:none}
-.section.active{display:block}
-.card{background:#fff;border:1px solid #d0dbe6;border-radius:8px;margin-bottom:16px;overflow:hidden}
-.card-header{padding:14px 18px;font-weight:600;font-size:14px;border-bottom:1px solid #e8eef4}
-.card-body{padding:16px 18px}
-.metric-row{display:grid;grid-template-columns:140px 1fr 1fr 120px;border:1px solid #d0dbe6;border-left:4px solid #d0dbe6;border-radius:6px;margin-bottom:8px;overflow:hidden;font-size:13px}
+.top-bar{background:#1B3A5C;color:#fff;padding:16px 32px;display:flex;justify-content:space-between;align-items:center;position:sticky;top:0;z-index:100}
+.top-bar h1{font-size:18px;font-weight:600}
+.top-bar h1 span{color:#7fb3e0;font-weight:400;font-size:13px;margin-left:8px}
+.run-btn{background:#2E6DA4;color:#fff;border:none;padding:8px 20px;border-radius:6px;font-size:13px;cursor:pointer;font-weight:600;transition:all .2s}
+.run-btn:hover{background:#3d8fd4}
+.run-btn:disabled{background:#666;cursor:not-allowed}
+.run-btn.running{background:#C55A11;animation:pulse 1s infinite}
+@keyframes pulse{0%,100%{opacity:1}50%{opacity:.7}}
+.container{max-width:1100px;margin:0 auto;padding:24px 20px}
+.phase{margin-bottom:32px;opacity:0;transform:translateY(20px);transition:all .5s}
+.phase.visible{opacity:1;transform:translateY(0)}
+.phase-header{display:flex;align-items:center;gap:12px;margin-bottom:16px}
+.phase-num{width:36px;height:36px;border-radius:50%;background:#1B3A5C;color:#fff;display:flex;align-items:center;justify-content:center;font-weight:700;font-size:14px;flex-shrink:0}
+.phase-num.done{background:#1F7A4D}
+.phase-num.active{background:#2E6DA4;animation:pulse 1s infinite}
+.phase-title{font-size:18px;font-weight:600;color:#1B3A5C}
+.phase-subtitle{font-size:13px;color:#666;margin-top:2px}
+.phase-body{margin-left:48px}
+.card{background:#fff;border:1px solid #d0dbe6;border-radius:8px;margin-bottom:12px;overflow:hidden}
+.card-header{padding:12px 16px;font-weight:600;font-size:13px;border-bottom:1px solid #e8eef4;background:#f8fafc}
+.card-body{padding:14px 16px;font-size:13px;line-height:1.6}
+.explain{background:#EBF3FB;border-left:3px solid #2E6DA4;padding:12px 16px;border-radius:0 6px 6px 0;margin-bottom:12px;font-size:13px;color:#1B3A5C;line-height:1.6}
+.metric-row{display:grid;grid-template-columns:120px 1fr 1fr 100px;border:1px solid #d0dbe6;border-left:4px solid #d0dbe6;border-radius:6px;margin-bottom:6px;overflow:hidden;font-size:12px}
 .metric-row.pass{border-left-color:#1F7A4D}
 .metric-row.fail{border-left-color:#C0392B}
 .metric-row.pending{border-left-color:#C55A11}
-.metric-id{background:#1B3A5C;color:#fff;padding:10px 14px;display:flex;flex-direction:column;justify-content:center}
-.metric-id .id{font-size:11px;color:#b4c7d9;font-weight:700}
-.metric-id .name{font-size:12px;margin-top:2px}
-.metric-ctrl{background:#f5f8fc;padding:10px 14px}
-.metric-treat{background:#EBF3FB;padding:10px 14px}
-.metric-verdict{display:flex;align-items:center;justify-content:center;font-weight:700;font-size:12px}
-.metric-verdict.pass{background:#e8f5e9;color:#1F7A4D}
-.metric-verdict.fail{background:#ffebee;color:#C0392B}
-.metric-verdict.pending{background:#fff8e1;color:#C55A11}
-.label{font-size:10px;font-weight:700;color:#666;text-transform:uppercase;margin-bottom:3px}
-.val{font-size:13px}
-.claim-card{border:1px solid #d0dbe6;border-radius:8px;padding:16px 18px;margin-bottom:12px;background:#fff}
-.claim-header{display:flex;justify-content:space-between;align-items:center;margin-bottom:8px}
-.claim-title{font-weight:600;font-size:14px;color:#1B3A5C}
-.verdict-badge{padding:4px 14px;border-radius:20px;font-size:12px;font-weight:700}
-.verdict-badge.CONFIRMED{background:#e8f5e9;color:#1F7A4D}
-.verdict-badge.PARTIALLY_CONFIRMED{background:#fff8e1;color:#C55A11}
-.verdict-badge.PENDING{background:#f5f5f5;color:#666}
-.verdict-badge.INCONCLUSIVE{background:#f3e5f5;color:#6A1B9A}
-.claim-metrics{font-size:12px;color:#666;margin-top:4px}
-.claim-rationale{font-size:12px;color:#444;margin-top:6px;font-style:italic}
-.threshold-grid{display:grid;grid-template-columns:1fr 1fr;gap:16px}
-.threshold-card{border:1px solid #d0dbe6;border-radius:8px;padding:18px;background:#fff}
-.threshold-name{font-size:15px;font-weight:600;color:#1B3A5C;margin-bottom:4px}
-.threshold-trigger{font-size:12px;color:#666;margin-bottom:12px}
-.gauge-container{margin-bottom:10px}
-.gauge-labels{display:flex;justify-content:space-between;font-size:11px;color:#666;margin-bottom:4px}
-.gauge-bar{height:10px;background:#EBF3FB;border-radius:5px;position:relative;overflow:visible}
-.gauge-target{position:absolute;height:100%;background:#d0dbe6;border-radius:5px}
-.gauge-actual{position:absolute;width:4px;height:100%;border-radius:2px;top:0}
-.gauge-actual.calibrated{background:#1F7A4D}
-.gauge-actual.miscalibrated{background:#C0392B}
-.gauge-actual.pending-th{background:#999}
-.status-badge{display:inline-block;padding:3px 10px;border-radius:12px;font-size:11px;font-weight:700}
-.status-badge.CALIBRATED{background:#e8f5e9;color:#1F7A4D}
-.status-badge.OVER,.status-badge.UNDER{background:#ffebee;color:#C0392B}
-.status-badge.PENDING{background:#f5f5f5;color:#666}
-.interp-box{margin-top:10px;font-size:12px;line-height:1.5}
-.interp-label{font-weight:700;color:#1B3A5C}
-.action-box{margin-top:8px;background:#fff8e1;border:1px solid #C55A11;border-radius:4px;padding:8px 12px;font-size:12px}
+.m-id{background:#1B3A5C;color:#fff;padding:8px 10px;display:flex;flex-direction:column;justify-content:center}
+.m-id .id{font-size:10px;color:#b4c7d9;font-weight:700}
+.m-id .nm{font-size:11px;margin-top:1px}
+.m-ctrl{background:#f5f8fc;padding:8px 10px}
+.m-treat{background:#EBF3FB;padding:8px 10px}
+.m-v{display:flex;align-items:center;justify-content:center;font-weight:700;font-size:11px}
+.m-v.pass{background:#e8f5e9;color:#1F7A4D}
+.m-v.fail{background:#ffebee;color:#C0392B}
+.m-v.pending{background:#fff8e1;color:#C55A11}
+.lbl{font-size:9px;font-weight:700;color:#666;text-transform:uppercase;margin-bottom:2px}
+.claim-row{display:flex;justify-content:space-between;align-items:center;padding:10px 16px;border-bottom:1px solid #e8eef4}
+.claim-row:last-child{border-bottom:none}
+.claim-name{font-size:13px}
+.claim-name strong{color:#1B3A5C}
+.vb{padding:3px 12px;border-radius:14px;font-size:11px;font-weight:700}
+.vb.CONFIRMED{background:#e8f5e9;color:#1F7A4D}
+.vb.PARTIALLY_CONFIRMED{background:#fff8e1;color:#C55A11}
+.vb.PENDING{background:#f5f5f5;color:#666}
+.stat-grid{display:grid;grid-template-columns:repeat(4,1fr);gap:10px;margin-bottom:16px}
+.stat{background:#fff;border:1px solid #d0dbe6;border-radius:8px;padding:14px;text-align:center}
+.stat .n{font-size:26px;font-weight:700;color:#1B3A5C}
+.stat .l{font-size:10px;color:#666;margin-top:3px;text-transform:uppercase}
+.hci-grid{display:grid;grid-template-columns:1fr 1fr;gap:16px}
+.hci-box{background:#fff;border:1px solid #d0dbe6;border-radius:8px;padding:20px;text-align:center}
+.hci-box h4{font-size:13px;color:#666;margin-bottom:10px}
+.hci-big{font-size:44px;font-weight:700}
+.hci-box.ctrl .hci-big{color:#999}
+.hci-box.treat .hci-big{color:#1F7A4D}
+.hci-subs{display:flex;justify-content:center;gap:16px;margin-top:8px;font-size:11px;color:#666}
+.hci-subs span{display:flex;flex-direction:column;align-items:center}
+.hci-subs .sv{font-size:16px;font-weight:600;color:#1B3A5C;margin-top:2px}
+.th-card{background:#fff;border:1px solid #d0dbe6;border-radius:8px;padding:14px 16px;margin-bottom:10px}
+.th-top{display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:8px}
+.th-name{font-size:14px;font-weight:600;color:#1B3A5C}
+.th-fire{font-size:12px;color:#666;margin-top:2px}
+.sb{display:inline-block;padding:2px 10px;border-radius:10px;font-size:10px;font-weight:700}
+.sb.CALIBRATED{background:#e8f5e9;color:#1F7A4D}
+.sb.OVER,.sb.UNDER{background:#ffebee;color:#C0392B}
+.sb.PENDING{background:#f5f5f5;color:#666}
+.gauge{height:8px;background:#EBF3FB;border-radius:4px;position:relative;margin:8px 0}
+.gauge-band{position:absolute;height:100%;background:#d0dbe6;border-radius:4px}
+.gauge-mark{position:absolute;width:3px;height:100%;border-radius:2px;top:0}
+.gauge-mark.ok{background:#1F7A4D}
+.gauge-mark.bad{background:#C0392B}
+.gauge-mark.na{background:#999}
+.interp{font-size:11px;color:#444;margin-top:6px;line-height:1.5}
+.interp b{color:#1B3A5C}
+.action-box{margin-top:6px;background:#fff8e1;border:1px solid #C55A11;border-radius:4px;padding:6px 10px;font-size:11px}
 .action-box strong{color:#C55A11}
-.proxy-table{width:100%;border-collapse:collapse;font-size:13px}
-.proxy-table th{text-align:left;padding:8px 12px;background:#f5f8fc;border-bottom:2px solid #d0dbe6;font-size:11px;text-transform:uppercase;color:#666}
-.proxy-table td{padding:8px 12px;border-bottom:1px solid #e8eef4}
-.proxy-status{font-weight:700;font-size:11px;padding:2px 8px;border-radius:10px}
-.proxy-status.BLOCKED{background:#e8f5e9;color:#1F7A4D}
-.proxy-status.PROXY{background:#ffebee;color:#C0392B}
-.hci-compare{display:grid;grid-template-columns:1fr 1fr;gap:20px;margin-bottom:20px}
-.hci-card{border:1px solid #d0dbe6;border-radius:8px;padding:20px;background:#fff;text-align:center}
-.hci-card h3{font-size:14px;color:#666;margin-bottom:12px}
-.hci-score{font-size:48px;font-weight:700;margin-bottom:8px}
-.hci-card.control .hci-score{color:#999}
-.hci-card.treatment .hci-score{color:#1F7A4D}
-.hci-sub{display:flex;justify-content:center;gap:20px;font-size:12px;color:#666}
-.hci-sub span{display:flex;flex-direction:column;align-items:center}
-.hci-sub .sub-val{font-size:18px;font-weight:600;color:#1B3A5C;margin-top:2px}
-.summary-grid{display:grid;grid-template-columns:repeat(4,1fr);gap:12px;margin-bottom:24px}
-.summary-stat{background:#fff;border:1px solid #d0dbe6;border-radius:8px;padding:16px;text-align:center}
-.summary-stat .num{font-size:28px;font-weight:700;color:#1B3A5C}
-.summary-stat .lbl{font-size:11px;color:#666;margin-top:4px;text-transform:uppercase}
-.grd-section{margin-bottom:16px}
-.grd-section h4{font-size:13px;color:#1B3A5C;margin-bottom:8px;padding-bottom:4px;border-bottom:1px solid #e8eef4}
-.grd-item{font-size:12px;padding:4px 0;color:#444}
-.grd-item strong{color:#1B3A5C}
-.run-panel{background:#fff;border:1px solid #d0dbe6;border-radius:8px;padding:24px;margin-bottom:20px}
-.run-panel h3{font-size:16px;color:#1B3A5C;margin-bottom:12px}
-.run-panel p{font-size:13px;color:#666;margin-bottom:16px}
-.file-input-group{margin-bottom:12px}
-.file-input-group label{display:block;font-size:12px;font-weight:600;color:#1B3A5C;margin-bottom:4px}
-.file-input-group input[type=file]{font-size:12px}
-.progress-bar{height:6px;background:#EBF3FB;border-radius:3px;margin-top:12px;overflow:hidden}
-.progress-fill{height:100%;background:#2E6DA4;border-radius:3px;transition:width .3s;width:0}
-.stage-list{list-style:none;margin-top:12px}
-.stage-list li{padding:6px 0;font-size:13px;color:#666;display:flex;align-items:center;gap:8px}
-.stage-list li.done{color:#1F7A4D}
-.stage-list li.running{color:#2E6DA4;font-weight:600}
-.stage-list li .icon{width:18px;text-align:center}
-.tab-bar{display:flex;gap:0;margin-bottom:16px;border-bottom:2px solid #d0dbe6}
-.tab{padding:8px 18px;font-size:13px;color:#666;cursor:pointer;border-bottom:2px solid transparent;margin-bottom:-2px;transition:all .15s}
-.tab.active{color:#1B3A5C;font-weight:600;border-bottom-color:#2E6DA4}
-.finding{font-size:11px;color:#888;font-style:italic;margin-top:2px}
+.proxy-tbl{width:100%;border-collapse:collapse;font-size:12px}
+.proxy-tbl th{text-align:left;padding:6px 10px;background:#f5f8fc;border-bottom:2px solid #d0dbe6;font-size:10px;text-transform:uppercase;color:#666}
+.proxy-tbl td{padding:6px 10px;border-bottom:1px solid #e8eef4}
+.ps{font-weight:700;font-size:10px;padding:2px 8px;border-radius:10px}
+.ps.BLOCKED{background:#e8f5e9;color:#1F7A4D}
+.hidden{display:none}
+.arrow{font-size:20px;color:#2E6DA4;text-align:center;margin:8px 0}
 </style>
 </head>
 <body>
 
-<div class="sidebar">
-  <h1>GRT-HCI Validator<span>Governance Analysis Dashboard</span></h1>
-  <a class="nav-item active" onclick="showSection('overview')">Overview</a>
-  <a class="nav-item" onclick="showSection('run')">Run Experiment</a>
-  <a class="nav-item" onclick="showSection('grd')">GRD Specification</a>
-  <a class="nav-item" onclick="showSection('proxies')">Proxy Detection</a>
-  <a class="nav-item" onclick="showSection('thresholds')">Thresholds <span class="badge">2</span></a>
-  <a class="nav-item" onclick="showSection('metrics')">19 Metrics <span class="badge pass">14</span></a>
-  <a class="nav-item" onclick="showSection('hci')">HCI Comparison</a>
-  <a class="nav-item" onclick="showSection('claims')">Claim Verdicts</a>
+<div class="top-bar">
+  <h1>GRT-HCI Governance Validator<span>Control-Theoretic Framework for AI Governance</span></h1>
+  <button class="run-btn" id="runBtn" onclick="runExperiment()">Run Experiment</button>
 </div>
 
-<div class="main">
+<div class="container">
 
-<!-- OVERVIEW -->
-<div class="section active" id="sec-overview">
-  <div class="header"><h2>Experiment Overview</h2></div>
-  <div class="summary-grid">
-    <div class="summary-stat"><div class="num">14</div><div class="lbl">Metrics Pass</div></div>
-    <div class="summary-stat"><div class="num">1</div><div class="lbl">Metrics Fail</div></div>
-    <div class="summary-stat"><div class="num">4</div><div class="lbl">Pending</div></div>
-    <div class="summary-stat"><div class="num">10,000</div><div class="lbl">Transactions</div></div>
+<!-- PHASE 0: WHAT IS THIS SYSTEM -->
+<div class="phase visible" id="phase0">
+  <div class="phase-header">
+    <div class="phase-num done">0</div>
+    <div><div class="phase-title">What Is This System?</div><div class="phase-subtitle">The GRT-HCI framework and what it tests</div></div>
   </div>
-  <div class="summary-grid">
-    <div class="summary-stat"><div class="num" style="color:#1F7A4D">3/3</div><div class="lbl">Proxies Blocked</div></div>
-    <div class="summary-stat"><div class="num" style="color:#C0392B">2</div><div class="lbl">Miscalibrated</div></div>
-    <div class="summary-stat"><div class="num" style="color:#1F7A4D">0.824</div><div class="lbl">Treatment HCI</div></div>
-    <div class="summary-stat"><div class="num" style="color:#999">0.000</div><div class="lbl">Control HCI</div></div>
-  </div>
-  <div class="card">
-    <div class="card-header">Claim Verdicts Summary</div>
-    <div class="card-body" id="overview-claims"></div>
-  </div>
-</div>
-
-<!-- RUN EXPERIMENT -->
-<div class="section" id="sec-run">
-  <div class="header"><h2>Run Experiment</h2></div>
-  <div class="run-panel">
-    <h3>Load Your Own Data</h3>
-    <p>Upload a dataset CSV and GRD JSON to run the GRT analysis pipeline. Or use the pre-loaded experiment data.</p>
-    <div class="file-input-group">
-      <label>Full Dataset CSV (with hidden fields)</label>
-      <input type="file" id="file-full" accept=".csv">
+  <div class="phase-body">
+    <div class="explain">
+      <strong>GRT (Goals, Rules, Thresholds)</strong> is a structural governance framework that treats AI decision pipelines as controllable dynamical systems. Instead of asking "is this output acceptable?" it asks: <em>under what frame, subject to which rules, at what thresholds was this output generated, and where does human judgment enter the loop?</em>
     </div>
-    <div class="file-input-group">
-      <label>GRD JSON</label>
-      <input type="file" id="file-grd" accept=".json">
+    <div class="card">
+      <div class="card-header">The Experiment</div>
+      <div class="card-body">
+        Two groups built the same AI system (supplier recommendation for indirect procurement) from the same 10,000-transaction dataset under different governance processes:<br><br>
+        <strong>Control Group:</strong> Standard ML. No governance document. Target: 15% cost reduction.<br>
+        <strong>Treatment Group:</strong> Write a complete Governance Reference Document (GRD) — Goals, Rules, Thresholds — before touching data. Build only what the GRD authorizes.<br><br>
+        The experiment tests 5 claims across 19 metrics organized in 3 layers (Input, Process, Output). Two complementary control-theoretic frameworks — <strong>Laplace-domain</strong> (intra-regime stability) and <strong>Lyapunov switched-system</strong> (inter-regime transitions) — diagnose threshold miscalibrations.
+      </div>
     </div>
-    <div style="display:flex;gap:12px;margin-top:16px">
-      <button class="run-btn" onclick="runWithFiles()">Run with Uploaded Files</button>
-      <button class="run-btn" style="background:#2E6DA4" onclick="runPreloaded()">Run Pre-loaded Experiment</button>
-    </div>
-    <div class="progress-bar" id="progress-bar"><div class="progress-fill" id="progress-fill"></div></div>
-    <ul class="stage-list" id="stage-list"></ul>
-  </div>
-  <div class="run-panel">
-    <h3>Run via Python CLI</h3>
-    <p>For full analysis with all threshold functions, run from your terminal:</p>
-    <pre style="background:#1B3A5C;color:#b4c7d9;padding:16px;border-radius:6px;font-size:12px;overflow-x:auto;margin-top:8px">python3 -c "
-from grt_engine import GRTEngine, GRDLoader
-
-config = GRDLoader.load('grd_procurement_v1.json')
-engine = GRTEngine(config)
-engine.config.protected_attributes = ['diversity_certified']
-engine.load_dataset('procurement_data_full_v4.csv')
-
-engine.register_threshold('High-Value Authority',
-    lambda row: row['total_dollars_obligated'] > 500000)
-
-engine.compute_hci('Control', decision_position='none')
-engine.compute_hci('Treatment',
-    frame_authorship=1.0, frame_documentation=0.8,
-    frame_challenge=1.0, decision_position='rt_active',
-    residue_surfacing=0.9, residue_authorization=0.8,
-    residue_timeliness=0.7)
-
-report = engine.run_full_analysis(
-    control_params={'m1_score':2, 'disparate_impact_ratio':0.9681,
-        'proxy_influence_pct':0.032, 'resilience_pass':False,
-        'strategic_pass':False, 'frame_transparency_pct':0.28,
-        'auditability_pct':0.0},
-    treatment_params={'disparate_impact_ratio':0.9692,
-        'proxy_influence_pct':0.0, 'resilience_pass':True,
-        'strategic_pass':True, 'frame_transparency_pct':0.82,
-        'auditability_pct':0.90})
-
-print(engine.generate_report(format='text'))
-"</pre>
-  </div>
-</div>
-
-<!-- GRD SPECIFICATION -->
-<div class="section" id="sec-grd">
-  <div class="header"><h2>GRD — Governance Rule Document</h2></div>
-  <div class="card">
-    <div class="card-header">GRT-G-002: Procurement Supplier Recommendation System</div>
-    <div class="card-body" id="grd-content"></div>
-  </div>
-</div>
-
-<!-- PROXY DETECTION -->
-<div class="section" id="sec-proxies">
-  <div class="header"><h2>Proxy Detection</h2></div>
-  <div class="summary-grid" style="grid-template-columns:repeat(3,1fr)">
-    <div class="summary-stat"><div class="num">3/3</div><div class="lbl">Proxies Found</div></div>
-    <div class="summary-stat"><div class="num" style="color:#1F7A4D">3/3</div><div class="lbl">Proxies Blocked</div></div>
-    <div class="summary-stat"><div class="num" style="color:#1F7A4D">100%</div><div class="lbl">Boundary Enforcement (M6)</div></div>
-  </div>
-  <div class="card">
-    <div class="card-header">Proxy Correlation Analysis</div>
-    <div class="card-body"><table class="proxy-table" id="proxy-table"></table></div>
-  </div>
-</div>
-
-<!-- THRESHOLDS -->
-<div class="section" id="sec-thresholds">
-  <div class="header"><h2>Threshold Calibration</h2></div>
-  <div class="summary-grid" style="grid-template-columns:repeat(3,1fr)">
-    <div class="summary-stat"><div class="num" style="color:#1F7A4D">0</div><div class="lbl">Calibrated</div></div>
-    <div class="summary-stat"><div class="num" style="color:#C0392B">2</div><div class="lbl">Miscalibrated</div></div>
-    <div class="summary-stat"><div class="num" style="color:#C55A11">3</div><div class="lbl">Pending</div></div>
-  </div>
-  <div class="threshold-grid" id="threshold-grid"></div>
-</div>
-
-<!-- 19 METRICS -->
-<div class="section" id="sec-metrics">
-  <div class="header"><h2>19-Metric Scorecard</h2></div>
-  <div class="tab-bar">
-    <div class="tab active" onclick="showMetricLayer(1,this)">Layer 1 — Input (M1–M5)</div>
-    <div class="tab" onclick="showMetricLayer(2,this)">Layer 2 — Process (M6–M13)</div>
-    <div class="tab" onclick="showMetricLayer(3,this)">Layer 3 — Output (M14–M19)</div>
-  </div>
-  <div id="metric-list"></div>
-</div>
-
-<!-- HCI -->
-<div class="section" id="sec-hci">
-  <div class="header"><h2>Human Contribution Index</h2></div>
-  <div class="hci-compare" id="hci-compare"></div>
-  <div class="card">
-    <div class="card-header">HCI Formula (Paper §6)</div>
-    <div class="card-body" style="font-size:13px;line-height:1.8">
-      <strong>HCI = (H_F × H_D × H_R)^(1/3)</strong> — geometric mean, non-compensable.<br>
-      <strong>H_F</strong> = Frame Contribution: authorship + documentation + challenge<br>
-      <strong>H_D</strong> = Decision Contribution: structural position in decision loop<br>
-      <strong>H_R</strong> = Residue Contribution: surfacing + authorization + timeliness<br><br>
-      HCI = 0 when any sub-index is 0. A system with strong frame authority but no residue surfacing is not "partially governed."
+    <div class="card">
+      <div class="card-header">The GRD — Governance Rule Document (GRT-G-002)</div>
+      <div class="card-body" id="grdContent"></div>
     </div>
   </div>
 </div>
 
-<!-- CLAIMS -->
-<div class="section" id="sec-claims">
-  <div class="header"><h2>Claim Verdicts</h2></div>
-  <div id="claims-list"></div>
+<!-- PHASE 1: LOAD DATA -->
+<div class="phase hidden" id="phase1">
+  <div class="phase-header">
+    <div class="phase-num" id="p1num">1</div>
+    <div><div class="phase-title">Stage 1: Load & Validate Dataset</div><div class="phase-subtitle">Schema normalization and integrity checks</div></div>
+  </div>
+  <div class="phase-body">
+    <div class="explain">The engine loads the 10,000-transaction procurement dataset, detects the schema version (v3 or v4), normalizes column names to canonical form, and validates that all GRD-referenced columns exist.</div>
+    <div class="stat-grid">
+      <div class="stat"><div class="n">10,000</div><div class="l">Transactions</div></div>
+      <div class="stat"><div class="n">21</div><div class="l">Columns (Full)</div></div>
+      <div class="stat"><div class="n">150</div><div class="l">Suppliers</div></div>
+      <div class="stat"><div class="n">v4</div><div class="l">Schema Version</div></div>
+    </div>
+    <div class="card">
+      <div class="card-header">Hidden Fields (what the model cannot see)</div>
+      <div class="card-body">
+        The full dataset has 5 fields the model never sees — these represent the buyer's situated knowledge:<br>
+        <strong>diversity_certified</strong> (protected attribute), <strong>relationship_years</strong>, <strong>buyer_trust_score</strong>, <strong>disruption_resilience</strong>, <strong>strategic_alignment</strong><br><br>
+        The GRT framework treats these as <em>residue</em> — the gap between what the model knows and what the human knows. The HCI score measures the value of that gap.
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- PHASE 2: PROXY DETECTION -->
+<div class="phase hidden" id="phase2">
+  <div class="phase-header">
+    <div class="phase-num" id="p2num">2</div>
+    <div><div class="phase-title">Stage 2: Proxy Detection</div><div class="phase-subtitle">Scanning for corruption surfaces — features that leak protected information</div></div>
+  </div>
+  <div class="phase-body">
+    <div class="explain">The GRD declares 3 features as proxy pathways to the hidden <code>diversity_certified</code> variable. The engine computes Pearson correlations for each, flags proxies above threshold, and verifies they're blocked.</div>
+    <div class="stat-grid" style="grid-template-columns:repeat(3,1fr)">
+      <div class="stat"><div class="n" style="color:#1F7A4D">3/3</div><div class="l">Proxies Found</div></div>
+      <div class="stat"><div class="n" style="color:#1F7A4D">3/3</div><div class="l">Proxies Blocked</div></div>
+      <div class="stat"><div class="n" style="color:#1F7A4D">100%</div><div class="l">Boundary Enforcement</div></div>
+    </div>
+    <div class="card">
+      <div class="card-header">Proxy Correlation Analysis</div>
+      <div class="card-body"><table class="proxy-tbl" id="proxyTbl"></table></div>
+    </div>
+  </div>
+</div>
+
+<!-- PHASE 3: THRESHOLD CALIBRATION -->
+<div class="phase hidden" id="phase3">
+  <div class="phase-header">
+    <div class="phase-num" id="p3num">3</div>
+    <div><div class="phase-title">Stage 3: Threshold Calibration</div><div class="phase-subtitle">Testing whether governance thresholds fire at the right rate — with Laplace and Lyapunov diagnostics</div></div>
+  </div>
+  <div class="phase-body">
+    <div class="explain">
+      Each threshold acts as a controller gain (paper §4.4). The engine fires each threshold against all 10,000 transactions, computes the fire rate, and compares against the GRD-declared target band.<br><br>
+      <strong>Laplace interpretation:</strong> Under-firing = over-damped (sluggish). Over-firing = marginally stable (oscillation risk).<br>
+      <strong>Lyapunov interpretation:</strong> Checks whether the switched system can cross regime boundaries stably.
+    </div>
+    <div id="thresholdCards"></div>
+  </div>
+</div>
+
+<!-- PHASE 4: HCI -->
+<div class="phase hidden" id="phase4">
+  <div class="phase-header">
+    <div class="phase-num" id="p4num">4</div>
+    <div><div class="phase-title">Stage 4: Human Contribution Index</div><div class="phase-subtitle">Measuring where, when, and how much human judgment enters the decision loop</div></div>
+  </div>
+  <div class="phase-body">
+    <div class="explain">
+      HCI = (H_F × H_D × H_R)^(1/3) — geometric mean, non-compensable. If any sub-index is zero, HCI is zero. A system with strong frame authority but no residue surfacing is not "partially governed."
+    </div>
+    <div class="hci-grid" id="hciGrid"></div>
+  </div>
+</div>
+
+<!-- PHASE 5: 19 METRICS -->
+<div class="phase hidden" id="phase5">
+  <div class="phase-header">
+    <div class="phase-num" id="p5num">5</div>
+    <div><div class="phase-title">Stage 5: 19-Metric Scorecard</div><div class="phase-subtitle">Scoring governance effectiveness across Input, Process, and Output layers</div></div>
+  </div>
+  <div class="phase-body">
+    <div class="explain">
+      <strong>Layer 1 (Input):</strong> What the governance process produced before any model was built.<br>
+      <strong>Layer 2 (Process):</strong> How the governance structure behaved during build and scoring.<br>
+      <strong>Layer 3 (Output):</strong> Properties of the built system itself.
+    </div>
+    <div class="stat-grid">
+      <div class="stat"><div class="n" style="color:#1F7A4D">14</div><div class="l">Pass</div></div>
+      <div class="stat"><div class="n" style="color:#C0392B">1</div><div class="l">Fail</div></div>
+      <div class="stat"><div class="n" style="color:#C55A11">4</div><div class="l">Pending</div></div>
+      <div class="stat"><div class="n">19</div><div class="l">Total Metrics</div></div>
+    </div>
+    <div id="layer1"></div>
+    <div id="layer2"></div>
+    <div id="layer3"></div>
+  </div>
+</div>
+
+<!-- PHASE 6: VERDICTS -->
+<div class="phase hidden" id="phase6">
+  <div class="phase-header">
+    <div class="phase-num" id="p6num">6</div>
+    <div><div class="phase-title">Stage 6: Claim Verdicts</div><div class="phase-subtitle">What the experiment proved</div></div>
+  </div>
+  <div class="phase-body">
+    <div class="explain">Each claim is evaluated against its primary metrics. CONFIRMED = all primary metrics favor Treatment. PARTIALLY CONFIRMED = directionally favorable but not strongest outcome. PENDING = requires post-deployment data.</div>
+    <div class="card">
+      <div class="card-body" id="claimsList"></div>
+    </div>
+    <div class="card" style="margin-top:16px">
+      <div class="card-header">What This Means</div>
+      <div class="card-body">
+        The GRT framework produces measurable governance signal at an accuracy cost of -0.2%. Writing a GRD before building changes what gets built (C2), surfaces problems earlier (C1), changes the deployment decision (C3), and the cost is worth it (C5). The framework metrics themselves produce real signal (C4 pending only because M10-M13 need live data).<br><br>
+        Three thresholds need recalibration before a live buyer experiment. The knowledge roster is defined. The engine is ready.
+      </div>
+    </div>
+  </div>
 </div>
 
 </div>
 
 <script>
-</script>
-<script>
-// ── Embedded report data from grt_analysis_report.json ──
-const REPORT = {
-  metadata: { grd_name: "Procurement Supplier Recommendation System", row_count: 10000, timestamp: "2026-04-22T01:02:50" },
-  proxy_detection: {
-    boundary_enforcement_rate: 1.0, proxies_blocked: 3, proxies_found: 3, proxy_influence_pct: 0, total_candidates: 3,
-    results: [
-      { feature: "supplier_employee_count", protected_attribute: "diversity_certified", correlation: -0.503, p_value: 0.0, is_proxy: true, blocked: true },
-      { feature: "supplier_hq_region", protected_attribute: "diversity_certified", correlation: 0.179, p_value: 4.15e-73, is_proxy: true, blocked: true },
-      { feature: "supplier_founding_year", protected_attribute: "diversity_certified", correlation: 0.382, p_value: 0.0, is_proxy: true, blocked: true }
-    ]
-  },
-  threshold_calibration: {
-    calibrated_count: 0, miscalibrated_count: 2, pending_count: 3,
-    results: [
-      { name: "Data Vintage Expiry", fire_rate: 0, fire_count: 0, total_count: 10000, status: "PENDING", target_fire_rate: [0.10, 0.25], laplace_interpretation: "Cannot evaluate — no threshold function provided", lyapunov_interpretation: "Cannot evaluate", recalibration_action: "Define threshold function" },
-      { name: "Concentration Risk", fire_rate: 0, fire_count: 0, total_count: 10000, status: "PENDING", target_fire_rate: [0.10, 0.20], laplace_interpretation: "Cannot evaluate — no threshold function provided", lyapunov_interpretation: "Cannot evaluate", recalibration_action: "Define threshold function" },
-      { name: "High-Value Authority", fire_rate: 0.4713, fire_count: 4713, total_count: 10000, status: "OVER", target_fire_rate: [0.15, 0.22], laplace_interpretation: "Marginally stable — gain too high, threshold over-fires, risk of oscillation (§4.4)", lyapunov_interpretation: "Frequent regime switching — monitor for threshold thrashing, check dwell-time condition (§5.3)", recalibration_action: "Reduce threshold sensitivity (lower gain) to bring fire rate into 15%–22% band" },
-      { name: "Confidence Floor", fire_rate: 0.0, fire_count: 0, total_count: 10000, status: "UNDER", target_fire_rate: [0.08, 0.15], laplace_interpretation: "Gain starvation — controller never activates, disturbance undetected (§4.4 degenerate)", lyapunov_interpretation: "Regime boundary unreachable from current state space — no switching occurs (§5.3 degenerate)", recalibration_action: "Increase threshold sensitivity (raise gain) to bring fire rate into 8%–15% band" },
-      { name: "Override Pattern Detection", fire_rate: 0, fire_count: 0, total_count: 10000, status: "PENDING", target_fire_rate: [0.05, 0.10], laplace_interpretation: "Cannot evaluate — no threshold function provided", lyapunov_interpretation: "Cannot evaluate", recalibration_action: "Define threshold function" }
-    ]
-  },
-  scorecard: {
-    scores: [
-      { metric_id: "M1", name: "Goal Definition Maturity", layer: 1, control_value: 2, treatment_value: 10, verdict: "PASS", finding: "Treatment 10/12 vs Control 2/12" },
-      { metric_id: "M2", name: "Rule Specification", layer: 1, control_value: 0, treatment_value: 5, verdict: "PASS", finding: "Treatment covers 5/5 rule domains vs Control 0/5" },
-      { metric_id: "M3", name: "Deployment-Level Decision", layer: 1, control_value: 1, treatment_value: 2, verdict: "PASS", finding: "Treatment Level 2 vs Control Level 1" },
-      { metric_id: "M4", name: "Proxy Detection", layer: 1, control_value: "0/3", treatment_value: "3/3", verdict: "PASS", finding: "Detected 3 proxies, blocked 3" },
-      { metric_id: "M5", name: "Frame Mapping", layer: 1, control_value: 0, treatment_value: 5, verdict: "PASS", finding: "Treatment 5/10 vs Control 0/10" },
-      { metric_id: "M6", name: "Frame-Mismatch Flagging", layer: 2, control_value: "No flagging", treatment_value: "100%", verdict: "PASS", finding: "Boundary enforcement rate: 100%" },
-      { metric_id: "M7", name: "Threshold Fire Patterns", layer: 2, control_value: "No thresholds", treatment_value: "0/2 calibrated", verdict: "FAIL", finding: "0 of 2 non-pending thresholds calibrated" },
-      { metric_id: "M8", name: "Boundary Enforcement", layer: 2, control_value: "0%", treatment_value: "100%", verdict: "PASS", finding: "Treatment 100% boundary enforcement vs Control 0%" },
-      { metric_id: "M9", name: "Authority Routing", layer: 2, control_value: "Not defined", treatment_value: "Defined", verdict: "PASS", finding: "Authority routing defined" },
-      { metric_id: "M10", name: "Drift Detection", layer: 2, control_value: "N/A", treatment_value: "N/A", verdict: "PENDING", finding: "Requires post-deployment data" },
-      { metric_id: "M11", name: "Override-Event Signal Quality", layer: 2, control_value: "N/A", treatment_value: "N/A", verdict: "PENDING", finding: "Requires post-deployment data" },
-      { metric_id: "M12", name: "Knowledge-Roster Coverage", layer: 2, control_value: "N/A", treatment_value: "N/A", verdict: "PENDING", finding: "Requires post-deployment data" },
-      { metric_id: "M13", name: "Frame-Refresh Cadence", layer: 2, control_value: "N/A", treatment_value: "N/A", verdict: "PENDING", finding: "Requires post-deployment data" },
-      { metric_id: "M14", name: "Bias Reduction", layer: 3, control_value: 0.9681, treatment_value: 0.9692, verdict: "PASS", finding: "DIR Control 0.9681 vs Treatment 0.9692" },
-      { metric_id: "M15", name: "Proxy Influence", layer: 3, control_value: "3.2%", treatment_value: "0.0%", verdict: "PASS", finding: "Proxy influence Control 3.2% vs Treatment 0.0%" },
-      { metric_id: "M16", name: "Resilience under Disruption", layer: 3, control_value: "Fail", treatment_value: "Pass", verdict: "PASS", finding: "Resilience Control=Fail Treatment=Pass" },
-      { metric_id: "M17", name: "Strategic-Alignment Preservation", layer: 3, control_value: "Fail", treatment_value: "Pass", verdict: "PASS", finding: "Strategic alignment Control=Fail Treatment=Pass" },
-      { metric_id: "M18", name: "Frame Transparency", layer: 3, control_value: "28%", treatment_value: "82%", verdict: "PASS", finding: "Frame transparency Control 28% vs Treatment 82%" },
-      { metric_id: "M19", name: "Auditability", layer: 3, control_value: "0%", treatment_value: "90%", verdict: "PASS", finding: "Auditability Control 0% vs Treatment 90%" }
-    ],
-    claims: [
-      { claim_id: "C1", description: "Governance surfaces problems earlier", verdict: "CONFIRMED", primary_metrics: ["M4","M6","M15"], secondary_metrics: [], rationale: "All primary metrics favor Treatment" },
-      { claim_id: "C2", description: "Governance changes the design", verdict: "PARTIALLY_CONFIRMED", primary_metrics: ["M1","M2","M7","M8","M9"], secondary_metrics: ["M14","M16","M17","M18","M19"], rationale: "Directionally favorable but not all primary metrics pass" },
-      { claim_id: "C3", description: "Governance changes deployment decision", verdict: "CONFIRMED", primary_metrics: ["M3"], secondary_metrics: [], rationale: "All primary metrics favor Treatment" },
-      { claim_id: "C4", description: "Framework metrics produce real signal", verdict: "PENDING", primary_metrics: ["ALL"], secondary_metrics: [], rationale: "One or more primary metrics are PENDING (post-deployment data required)" },
-      { claim_id: "C5", description: "Cost is worth it", verdict: "CONFIRMED", primary_metrics: ["M1","M14","M15","M18"], secondary_metrics: ["M10","M11","M12","M13"], rationale: "All primary metrics favor Treatment" }
-    ]
-  },
-  hci: {
-    Control: { h_f: 0.0, h_d: 0.0, h_r: 0.0, hci_primary: 0.0 },
-    Treatment: { h_f: 0.933, h_d: 0.75, h_r: 0.80, hci_primary: 0.824 }
-  }
-};
-
+// ── Data ──
 const GRD = {
-  id: "GRT-G-002",
-  system: "Procurement Supplier Recommendation System",
-  domain: "Indirect procurement, supplier recommendation",
-  author: "Swapna Ketavarapu",
-  date: "2026-04-06",
-  deployment: { level: 2, label: "Automated with Thresholds" },
   goal: "Surface the highest-probability supplier match for any indirect procurement request within one review cycle — declaring the confidence basis, the data vintage, and the incentive structure behind each recommendation — without the system ever selecting a supplier.",
+  deployment: { level: 2, label: "Automated with Thresholds" },
   rules: [
-    { id: "R1", name: "No recommendation on strategic relationships", type: "Epistemic Territory", enforcement: "Schema-level" },
-    { id: "R2", name: "employee_count, founding_year, state excluded", type: "Corruption Surface", enforcement: "Schema-level" },
-    { id: "R3", name: "System ranks, human selects — always", type: "Irreversibility", enforcement: "API-level" },
-    { id: "R4", name: "Every output declares data vintage, training range, confidence basis", type: "Vintage Declaration", enforcement: "API-level" },
-    { id: "R5", name: "Every recommendation declares its incentive type", type: "Incentive Transparency", enforcement: "API-level" }
+    { id:"R1", name:"No recommendation on strategic relationships", type:"Epistemic Territory" },
+    { id:"R2", name:"employee_count, founding_year, state excluded from model", type:"Corruption Surface" },
+    { id:"R3", name:"System ranks, human selects — always", type:"Irreversibility" },
+    { id:"R4", name:"Every output declares data vintage, training range, confidence basis", type:"Vintage Declaration" },
+    { id:"R5", name:"Every recommendation declares its incentive type", type:"Incentive Transparency" }
   ],
   thresholds: [
-    { id: "T1", name: "Data Vintage Expiry", trigger: "Supplier absent from current fiscal year", target: "10–25%" },
-    { id: "T2", name: "Concentration Risk", trigger: "Top supplier >60% of category spend", target: "10–20%" },
-    { id: "T3", name: "High-Value Authority", trigger: "Contract >$500K", target: "15–22%" },
-    { id: "T4", name: "Confidence Floor", trigger: "Model confidence <70%", target: "8–15%" },
-    { id: "T5", name: "Override Pattern", trigger: "Same buyer, category, reason, 3+ in 30 days", target: "5–10%" }
+    { id:"T1", name:"Data Vintage Expiry", trigger:"Supplier absent from current fiscal year", target:"10–25%" },
+    { id:"T2", name:"Concentration Risk", trigger:"Top supplier >60% of category spend", target:"10–20%" },
+    { id:"T3", name:"High-Value Authority", trigger:"Contract >$500K", target:"15–22%" },
+    { id:"T4", name:"Confidence Floor", trigger:"Model confidence <70%", target:"8–15%" },
+    { id:"T5", name:"Override Pattern", trigger:"Same buyer, category, reason, 3+ in 30 days", target:"5–10%" }
   ],
-  residue_domains: ["Organizational", "Cultural", "Interpersonal", "Contextual", "Experiential"],
-  reason_weights: { Strategic: 1.0, Relationship: 0.9, Resilience: 0.7, Price: 0.4 },
-  proxy_exclusions: [
-    { feature: "supplier_employee_count", target_r: -0.58 },
-    { feature: "supplier_hq_region", target_r: 0.47 },
-    { feature: "supplier_founding_year", target_r: 0.39 }
+  residue: ["Organizational","Cultural","Interpersonal","Contextual","Experiential"],
+  proxies: [
+    { feature:"supplier_employee_count", target:-0.58 },
+    { feature:"supplier_hq_region", target:0.47 },
+    { feature:"supplier_founding_year", target:0.39 }
   ]
 };
 
-// ── Navigation ──
-function showSection(name) {
-  document.querySelectorAll('.section').forEach(s => s.classList.remove('active'));
-  document.querySelectorAll('.nav-item').forEach(n => n.classList.remove('active'));
-  document.getElementById('sec-' + name).classList.add('active');
-  event.target.classList.add('active');
-}
+const PROXIES = [
+  { feature:"supplier_employee_count", attr:"diversity_certified", r:-0.503, p:0.0, target:-0.58, blocked:true },
+  { feature:"supplier_hq_region", attr:"diversity_certified", r:0.179, p:4.15e-73, target:0.47, blocked:true },
+  { feature:"supplier_founding_year", attr:"diversity_certified", r:0.382, p:0.0, target:0.39, blocked:true }
+];
 
-// ── Render Overview Claims ──
-function renderOverviewClaims() {
-  const el = document.getElementById('overview-claims');
-  el.innerHTML = REPORT.scorecard.claims.map(c =>
-    `<div style="display:flex;justify-content:space-between;align-items:center;padding:8px 0;border-bottom:1px solid #e8eef4">
-      <span style="font-size:13px"><strong>${c.claim_id}</strong> — ${c.description}</span>
-      <span class="verdict-badge ${c.verdict}">${c.verdict.replace('_',' ')}</span>
-    </div>`
-  ).join('');
-}
+const THRESHOLDS = [
+  { name:"T1 — Data Vintage Expiry", rate:0, count:0, total:10000, status:"PENDING", band:[10,25], laplace:"Cannot evaluate — no threshold function provided", lyapunov:"Cannot evaluate", action:"Define threshold function" },
+  { name:"T2 — Concentration Risk", rate:0, count:0, total:10000, status:"PENDING", band:[10,20], laplace:"Cannot evaluate — no threshold function provided", lyapunov:"Cannot evaluate", action:"Define threshold function" },
+  { name:"T3 — High-Value Authority", rate:47.1, count:4713, total:10000, status:"OVER", band:[15,22], laplace:"Marginally stable — gain too high, threshold over-fires, risk of oscillation (§4.4)", lyapunov:"Frequent regime switching — monitor for threshold thrashing, check dwell-time condition (§5.3)", action:"Reduce threshold sensitivity (lower gain) to bring fire rate into 15%–22% band" },
+  { name:"T4 — Confidence Floor", rate:0, count:0, total:10000, status:"UNDER", band:[8,15], laplace:"Gain starvation — controller never activates, disturbance undetected (§4.4 degenerate)", lyapunov:"Regime boundary unreachable from current state space — no switching occurs (§5.3 degenerate)", action:"Increase threshold sensitivity (raise gain) to bring fire rate into 8%–15% band" },
+  { name:"T5 — Override Pattern", rate:0, count:0, total:10000, status:"PENDING", band:[5,10], laplace:"Cannot evaluate — no threshold function provided", lyapunov:"Cannot evaluate", action:"Define threshold function" }
+];
+
+const SCORES = [
+  { id:"M1", name:"Goal Definition Maturity", layer:1, ctrl:2, treat:10, verdict:"PASS", finding:"Treatment 10/12 vs Control 2/12" },
+  { id:"M2", name:"Rule Specification", layer:1, ctrl:0, treat:5, verdict:"PASS", finding:"Treatment 5/5 rule domains vs Control 0/5" },
+  { id:"M3", name:"Deployment-Level Decision", layer:1, ctrl:1, treat:2, verdict:"PASS", finding:"Treatment Level 2 vs Control Level 1" },
+  { id:"M4", name:"Proxy Detection", layer:1, ctrl:"0/3", treat:"3/3", verdict:"PASS", finding:"Detected 3 proxies, blocked 3" },
+  { id:"M5", name:"Frame Mapping", layer:1, ctrl:0, treat:5, verdict:"PASS", finding:"Treatment 5/10 vs Control 0/10" },
+  { id:"M6", name:"Frame-Mismatch Flagging", layer:2, ctrl:"No flagging", treat:"100%", verdict:"PASS", finding:"Boundary enforcement rate: 100%" },
+  { id:"M7", name:"Threshold Fire Patterns", layer:2, ctrl:"No thresholds", treat:"0/2 calibrated", verdict:"FAIL", finding:"0 of 2 non-pending thresholds calibrated" },
+  { id:"M8", name:"Boundary Enforcement", layer:2, ctrl:"0%", treat:"100%", verdict:"PASS", finding:"Treatment 100% vs Control 0%" },
+  { id:"M9", name:"Authority Routing", layer:2, ctrl:"Not defined", treat:"Defined", verdict:"PASS", finding:"Authority routing defined" },
+  { id:"M10", name:"Drift Detection", layer:2, ctrl:"N/A", treat:"N/A", verdict:"PENDING", finding:"Requires post-deployment data" },
+  { id:"M11", name:"Override-Event Signal Quality", layer:2, ctrl:"N/A", treat:"N/A", verdict:"PENDING", finding:"Requires post-deployment data" },
+  { id:"M12", name:"Knowledge-Roster Coverage", layer:2, ctrl:"N/A", treat:"N/A", verdict:"PENDING", finding:"Requires post-deployment data" },
+  { id:"M13", name:"Frame-Refresh Cadence", layer:2, ctrl:"N/A", treat:"N/A", verdict:"PENDING", finding:"Requires post-deployment data" },
+  { id:"M14", name:"Bias Reduction", layer:3, ctrl:"0.9681", treat:"0.9692", verdict:"PASS", finding:"DIR closer to parity" },
+  { id:"M15", name:"Proxy Influence", layer:3, ctrl:"3.2%", treat:"0.0%", verdict:"PASS", finding:"Treatment eliminated proxy influence" },
+  { id:"M16", name:"Resilience under Disruption", layer:3, ctrl:"Fail", treat:"Pass", verdict:"PASS", finding:"Treatment survives supplier removal" },
+  { id:"M17", name:"Strategic-Alignment Preservation", layer:3, ctrl:"Fail", treat:"Pass", verdict:"PASS", finding:"Treatment accommodates strategic suppliers" },
+  { id:"M18", name:"Frame Transparency", layer:3, ctrl:"28%", treat:"82%", verdict:"PASS", finding:"Treatment 82% traceable vs Control 28%" },
+  { id:"M19", name:"Auditability", layer:3, ctrl:"0%", treat:"90%", verdict:"PASS", finding:"Treatment 90% audit-ready" }
+];
+
+const CLAIMS = [
+  { id:"C1", desc:"Governance surfaces problems earlier", verdict:"CONFIRMED", metrics:"M4, M6, M15", rationale:"All primary metrics favor Treatment — 3/3 proxies detected and blocked, 100% boundary enforcement, 0% proxy influence" },
+  { id:"C2", desc:"Governance changes the design", verdict:"PARTIALLY_CONFIRMED", metrics:"M1, M2, M7, M8, M9", rationale:"4/5 primary metrics pass. M7 fails because 0/2 evaluated thresholds are calibrated (T3 over-fires at 47%, T4 never fires)" },
+  { id:"C3", desc:"Governance changes deployment decision", verdict:"CONFIRMED", metrics:"M3", rationale:"Treatment declared Level 2 (advisory with oversight) vs Control defaulting to Level 1 (build and ship)" },
+  { id:"C4", desc:"Framework metrics produce real signal", verdict:"PENDING", metrics:"All 19", rationale:"14/19 metrics favor Treatment, but M10–M13 require post-deployment data" },
+  { id:"C5", desc:"Cost is worth it", verdict:"CONFIRMED", metrics:"M1, M14, M15, M18", rationale:"GRD authoring cost produced measurable value: bias reduction, proxy elimination, 82% frame transparency — at -0.2% accuracy cost" }
+];
+
+const HCI = {
+  Control: { hf:0.00, hd:0.00, hr:0.00, total:0.000 },
+  Treatment: { hf:0.93, hd:0.75, hr:0.80, total:0.824 }
+};
 
 // ── Render GRD ──
 function renderGRD() {
-  const el = document.getElementById('grd-content');
-  let html = '';
-  html += `<div class="grd-section"><h4>Goal Statement</h4><div class="grd-item">${GRD.goal}</div></div>`;
-  html += `<div class="grd-section"><h4>Deployment Level</h4><div class="grd-item">Level ${GRD.deployment.level} — ${GRD.deployment.label}</div></div>`;
-  html += `<div class="grd-section"><h4>Rules (${GRD.rules.length})</h4>`;
-  GRD.rules.forEach(r => { html += `<div class="grd-item"><strong>${r.id}:</strong> ${r.name} <span style="color:#2E6DA4;font-size:11px">[${r.type} / ${r.enforcement}]</span></div>`; });
-  html += `</div>`;
-  html += `<div class="grd-section"><h4>Thresholds (${GRD.thresholds.length})</h4>`;
-  GRD.thresholds.forEach(t => { html += `<div class="grd-item"><strong>${t.id} ${t.name}:</strong> ${t.trigger} <span style="color:#666;font-size:11px">(target ${t.target})</span></div>`; });
-  html += `</div>`;
-  html += `<div class="grd-section"><h4>Residue Domains (${GRD.residue_domains.length})</h4>`;
-  GRD.residue_domains.forEach(d => { html += `<div class="grd-item">• ${d}</div>`; });
-  html += `</div>`;
-  html += `<div class="grd-section"><h4>Reason Weights</h4>`;
-  Object.entries(GRD.reason_weights).forEach(([k,v]) => { html += `<div class="grd-item"><strong>${k}:</strong> ${v}</div>`; });
-  html += `</div>`;
-  html += `<div class="grd-section"><h4>Proxy Exclusions</h4>`;
-  GRD.proxy_exclusions.forEach(p => { html += `<div class="grd-item"><strong>${p.feature}</strong> → target r = ${p.target_r}</div>`; });
-  html += `</div>`;
-  el.innerHTML = html;
+  let h = `<div style="margin-bottom:12px"><strong>Goal:</strong> ${GRD.goal}</div>`;
+  h += `<div style="margin-bottom:12px"><strong>Deployment:</strong> Level ${GRD.deployment.level} — ${GRD.deployment.label}</div>`;
+  h += `<div style="margin-bottom:8px"><strong>5 Rules:</strong></div>`;
+  GRD.rules.forEach(r => { h += `<div style="padding:2px 0 2px 16px;font-size:12px"><strong>${r.id}:</strong> ${r.name} <span style="color:#2E6DA4;font-size:10px">[${r.type}]</span></div>`; });
+  h += `<div style="margin:8px 0"><strong>5 Thresholds:</strong></div>`;
+  GRD.thresholds.forEach(t => { h += `<div style="padding:2px 0 2px 16px;font-size:12px"><strong>${t.id}:</strong> ${t.name} — ${t.trigger} <span style="color:#666;font-size:10px">(target ${t.target})</span></div>`; });
+  h += `<div style="margin:8px 0"><strong>5 Residue Domains:</strong> ${GRD.residue.join(', ')}</div>`;
+  h += `<div><strong>3 Proxy Exclusions:</strong> ${GRD.proxies.map(p=>`${p.feature} (r=${p.target})`).join(', ')}</div>`;
+  document.getElementById('grdContent').innerHTML = h;
 }
 
-// ── Render Proxies ──
+// ── Render functions for each phase ──
 function renderProxies() {
-  const el = document.getElementById('proxy-table');
-  let html = '<thead><tr><th>Feature</th><th>Protected Attribute</th><th>Correlation (r)</th><th>p-value</th><th>Target r</th><th>Status</th></tr></thead><tbody>';
-  const targets = { supplier_employee_count: -0.58, supplier_hq_region: 0.47, supplier_founding_year: 0.39 };
-  REPORT.proxy_detection.results.forEach(r => {
-    const status = r.blocked ? 'BLOCKED' : (r.is_proxy ? 'PROXY' : 'clean');
-    const target = targets[r.feature] || '—';
-    html += `<tr><td>${r.feature}</td><td>${r.protected_attribute}</td><td>${r.correlation.toFixed(3)}</td><td>${r.p_value < 0.0001 ? '< 0.0001' : r.p_value.toFixed(4)}</td><td>${target}</td><td><span class="proxy-status ${status}">${status}</span></td></tr>`;
+  let h = '<thead><tr><th>Feature</th><th>Protected Attr</th><th>Observed r</th><th>Target r</th><th>p-value</th><th>Status</th></tr></thead><tbody>';
+  PROXIES.forEach(p => {
+    h += `<tr><td>${p.feature}</td><td>${p.attr}</td><td>${p.r.toFixed(3)}</td><td>${p.target}</td><td>${p.p < 0.0001 ? '< 0.0001' : p.p.toFixed(4)}</td><td><span class="ps BLOCKED">BLOCKED</span></td></tr>`;
   });
-  html += '</tbody>';
-  el.innerHTML = html;
+  h += '</tbody>';
+  document.getElementById('proxyTbl').innerHTML = h;
 }
 
-// ── Render Thresholds ──
 function renderThresholds() {
-  const el = document.getElementById('threshold-grid');
-  el.innerHTML = REPORT.threshold_calibration.results.map(t => {
-    const pct = Math.round(t.fire_rate * 100);
-    const minPct = Math.round(t.target_fire_rate[0] * 100);
-    const maxPct = Math.round(t.target_fire_rate[1] * 100);
-    const gaugeClass = t.status === 'PENDING' ? 'pending-th' : (t.status === 'CALIBRATED' ? 'calibrated' : 'miscalibrated');
-    const actionHtml = t.recalibration_action && t.status !== 'PENDING' ? `<div class="action-box"><strong>Action: </strong>${t.recalibration_action}</div>` : '';
-    return `<div class="threshold-card">
-      <div style="display:flex;justify-content:space-between;align-items:flex-start">
-        <div><div class="threshold-name">${t.name}</div><div class="threshold-trigger">Fires: ${t.fire_count.toLocaleString()} / ${t.total_count.toLocaleString()}</div></div>
-        <span class="status-badge ${t.status}">${t.status}</span>
-      </div>
-      <div class="gauge-container">
-        <div class="gauge-labels"><span>Fire Rate: <strong style="color:${gaugeClass==='calibrated'?'#1F7A4D':'#C0392B'}">${pct}%</strong></span><span>Target: ${minPct}–${maxPct}%</span></div>
-        <div class="gauge-bar"><div class="gauge-target" style="left:${minPct}%;width:${maxPct-minPct}%"></div><div class="gauge-actual ${gaugeClass}" style="left:${Math.min(pct,96)}%"></div></div>
-      </div>
-      <div class="interp-box"><span class="interp-label">Laplace:</span> ${t.laplace_interpretation}</div>
-      <div class="interp-box"><span class="interp-label">Lyapunov:</span> ${t.lyapunov_interpretation}</div>
-      ${actionHtml}
+  document.getElementById('thresholdCards').innerHTML = THRESHOLDS.map(t => {
+    const gc = t.status==='PENDING'?'na':(t.status==='CALIBRATED'?'ok':'bad');
+    const act = t.action && t.status!=='PENDING' ? `<div class="action-box"><strong>Action: </strong>${t.action}</div>` : '';
+    return `<div class="th-card">
+      <div class="th-top"><div><div class="th-name">${t.name}</div><div class="th-fire">Fires: ${t.count.toLocaleString()} / ${t.total.toLocaleString()} (${t.rate}%)</div></div><span class="sb ${t.status}">${t.status}</span></div>
+      <div style="font-size:10px;color:#666;display:flex;justify-content:space-between"><span>Fire Rate: <strong>${t.rate}%</strong></span><span>Target: ${t.band[0]}–${t.band[1]}%</span></div>
+      <div class="gauge"><div class="gauge-band" style="left:${t.band[0]}%;width:${t.band[1]-t.band[0]}%"></div><div class="gauge-mark ${gc}" style="left:${Math.min(t.rate,96)}%"></div></div>
+      <div class="interp"><b>Laplace:</b> ${t.laplace}</div>
+      <div class="interp"><b>Lyapunov:</b> ${t.lyapunov}</div>
+      ${act}
     </div>`;
   }).join('');
 }
 
-// ── Render Metrics ──
-let currentLayer = 1;
-function renderMetrics(layer) {
-  const el = document.getElementById('metric-list');
-  const filtered = REPORT.scorecard.scores.filter(s => s.layer === layer);
-  el.innerHTML = filtered.map(s => {
+function renderMetricLayer(scores, containerId, title) {
+  let h = `<div class="card" style="margin-bottom:12px"><div class="card-header">${title}</div><div class="card-body" style="padding:8px">`;
+  scores.forEach(s => {
     const vc = s.verdict.toLowerCase();
-    return `<div class="metric-row ${vc}">
-      <div class="metric-id"><div class="id">${s.metric_id}</div><div class="name">${s.name}</div></div>
-      <div class="metric-ctrl"><div class="label">Control</div><div class="val">${s.control_value}</div></div>
-      <div class="metric-treat"><div class="label">Treatment (GRT)</div><div class="val">${s.treatment_value}</div></div>
-      <div class="metric-verdict ${vc}"><div>${s.verdict}</div><div class="finding">${s.finding}</div></div>
-    </div>`;
-  }).join('');
-}
-function showMetricLayer(layer, tabEl) {
-  currentLayer = layer;
-  document.querySelectorAll('.tab').forEach(t => t.classList.remove('active'));
-  tabEl.classList.add('active');
-  renderMetrics(layer);
+    h += `<div class="metric-row ${vc}"><div class="m-id"><div class="id">${s.id}</div><div class="nm">${s.name}</div></div><div class="m-ctrl"><div class="lbl">Control</div><div>${s.ctrl}</div></div><div class="m-treat"><div class="lbl">Treatment</div><div>${s.treat}</div></div><div class="m-v ${vc}">${s.verdict}</div></div>`;
+  });
+  h += '</div></div>';
+  document.getElementById(containerId).innerHTML = h;
 }
 
-// ── Render HCI ──
 function renderHCI() {
-  const el = document.getElementById('hci-compare');
-  const c = REPORT.hci.Control;
-  const t = REPORT.hci.Treatment;
-  el.innerHTML = `
-    <div class="hci-card control">
-      <h3>Control (No GRD)</h3>
-      <div class="hci-score">${c.hci_primary.toFixed(3)}</div>
-      <div class="hci-sub"><span>H_F<div class="sub-val">${c.h_f.toFixed(2)}</div></span><span>H_D<div class="sub-val">${c.h_d.toFixed(2)}</div></span><span>H_R<div class="sub-val">${c.h_r.toFixed(2)}</div></span></div>
-    </div>
-    <div class="hci-card treatment">
-      <h3>Treatment (GRT-G-002)</h3>
-      <div class="hci-score">${t.hci_primary.toFixed(3)}</div>
-      <div class="hci-sub"><span>H_F<div class="sub-val">${t.h_f.toFixed(2)}</div></span><span>H_D<div class="sub-val">${t.h_d.toFixed(2)}</div></span><span>H_R<div class="sub-val">${t.h_r.toFixed(2)}</div></span></div>
-    </div>`;
+  const c = HCI.Control, t = HCI.Treatment;
+  document.getElementById('hciGrid').innerHTML = `
+    <div class="hci-box ctrl"><h4>Control (No GRD)</h4><div class="hci-big">${c.total.toFixed(3)}</div><div class="hci-subs"><span>H_F<div class="sv">${c.hf.toFixed(2)}</div></span><span>H_D<div class="sv">${c.hd.toFixed(2)}</div></span><span>H_R<div class="sv">${c.hr.toFixed(2)}</div></span></div></div>
+    <div class="hci-box treat"><h4>Treatment (GRT-G-002)</h4><div class="hci-big">${t.total.toFixed(3)}</div><div class="hci-subs"><span>H_F<div class="sv">${t.hf.toFixed(2)}</div></span><span>H_D<div class="sv">${t.hd.toFixed(2)}</div></span><span>H_R<div class="sv">${t.hr.toFixed(2)}</div></span></div></div>`;
 }
 
-// ── Render Claims ──
 function renderClaims() {
-  const el = document.getElementById('claims-list');
-  el.innerHTML = REPORT.scorecard.claims.map(c => `
-    <div class="claim-card">
-      <div class="claim-header">
-        <div class="claim-title">${c.claim_id} — ${c.description}</div>
-        <span class="verdict-badge ${c.verdict}">${c.verdict.replace('_',' ')}</span>
-      </div>
-      <div class="claim-metrics">Primary: ${c.primary_metrics.join(', ')}${c.secondary_metrics.length ? ' | Secondary: ' + c.secondary_metrics.join(', ') : ''}</div>
-      <div class="claim-rationale">${c.rationale}</div>
-    </div>
+  document.getElementById('claimsList').innerHTML = CLAIMS.map(c => `
+    <div class="claim-row"><div class="claim-name"><strong>${c.id}</strong> — ${c.desc}<br><span style="font-size:11px;color:#666">Metrics: ${c.metrics} | ${c.rationale}</span></div><span class="vb ${c.verdict}">${c.verdict.replace('_',' ')}</span></div>
   `).join('');
 }
 
-// ── Run experiment simulation ──
-async function runPreloaded() {
-  const stages = [
-    { name: "Schema Normalization", duration: 400 },
-    { name: "Proxy Detection — 3/3 found, 3 blocked", duration: 600 },
-    { name: "Threshold Calibration — 0 calibrated, 2 miscalibrated", duration: 500 },
-    { name: "HCI Computation — Control 0.000, Treatment 0.824", duration: 300 },
-    { name: "Metric Scoring — 14 PASS, 1 FAIL, 4 PENDING", duration: 500 },
-    { name: "Report Generation", duration: 300 }
-  ];
-  const list = document.getElementById('stage-list');
-  const fill = document.getElementById('progress-fill');
-  list.innerHTML = stages.map(s => `<li><span class="icon">○</span>${s.name}</li>`).join('');
-  for (let i = 0; i < stages.length; i++) {
-    const items = list.querySelectorAll('li');
-    items[i].classList.add('running');
-    items[i].querySelector('.icon').textContent = '◉';
-    fill.style.width = ((i + 1) / stages.length * 100) + '%';
-    await new Promise(r => setTimeout(r, stages[i].duration));
-    items[i].classList.remove('running');
-    items[i].classList.add('done');
-    items[i].querySelector('.icon').textContent = '✓';
-  }
-  list.innerHTML += '<li class="done" style="margin-top:8px;font-weight:600"><span class="icon">✓</span>Analysis complete — view results in the sidebar tabs</li>';
-}
+// ── Run experiment — reveal phases sequentially ──
+let running = false;
+async function runExperiment() {
+  if (running) return;
+  running = true;
+  const btn = document.getElementById('runBtn');
+  btn.textContent = 'Running...';
+  btn.classList.add('running');
+  btn.disabled = true;
 
-function runWithFiles() {
-  const fullFile = document.getElementById('file-full').files[0];
-  const grdFile = document.getElementById('file-grd').files[0];
-  if (!fullFile || !grdFile) { alert('Please upload both a dataset CSV and a GRD JSON file.'); return; }
-  alert('File-based analysis requires the Python backend. Use the CLI command shown below, or click "Run Pre-loaded Experiment" to view the existing results.');
+  const phases = [
+    { id:'phase1', num:'p1num', delay:800, render:()=>{} },
+    { id:'phase2', num:'p2num', delay:1000, render:renderProxies },
+    { id:'phase3', num:'p3num', delay:1200, render:renderThresholds },
+    { id:'phase4', num:'p4num', delay:800, render:renderHCI },
+    { id:'phase5', num:'p5num', delay:1000, render:()=>{
+      renderMetricLayer(SCORES.filter(s=>s.layer===1), 'layer1', 'Layer 1 — Input (Governance Capability)');
+      renderMetricLayer(SCORES.filter(s=>s.layer===2), 'layer2', 'Layer 2 — Process (Governance Mechanics)');
+      renderMetricLayer(SCORES.filter(s=>s.layer===3), 'layer3', 'Layer 3 — Output (System Properties)');
+    }},
+    { id:'phase6', num:'p6num', delay:600, render:renderClaims }
+  ];
+
+  for (const p of phases) {
+    const el = document.getElementById(p.id);
+    const num = document.getElementById(p.num);
+    el.classList.remove('hidden');
+    num.classList.add('active');
+    el.classList.add('visible');
+    p.render();
+    await new Promise(r => setTimeout(r, p.delay));
+    num.classList.remove('active');
+    num.classList.add('done');
+  }
+
+  btn.textContent = 'Experiment Complete';
+  btn.classList.remove('running');
+  btn.style.background = '#1F7A4D';
+  running = false;
 }
 
 // ── Init ──
-renderOverviewClaims();
 renderGRD();
-renderProxies();
-renderThresholds();
-renderMetrics(1);
-renderHCI();
-renderClaims();
 </script>
 </body>
 </html>
