@@ -137,9 +137,9 @@ body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,sans-serif;b
 <div class="info"><strong>The question:</strong> Can the model figure out which suppliers are diversity-certified even though that field is hidden? If employee_count, region, or founding_year correlate with diversity status, the model can learn the pattern indirectly.</div>
 <div class="example"><strong>Concrete example:</strong> SmallSupplier_007 has 45 employees, is based in the West, and was founded in 2004. It's diversity-certified. LargeSupplier_054 has 15,772 employees, is in the Southwest, and was founded in 1968. It's not diversity-certified. If the model learns "small + West + newer = lower cost-reduction potential," it's effectively learning "diversity-certified = lower priority" — without ever seeing the diversity field.</div>
 <div class="sg" style="grid-template-columns:repeat(3,1fr)">
-  <div class="st"><div class="n" style="color:#1F7A4D">3/3</div><div class="l">Proxies Found</div></div>
-  <div class="st"><div class="n" style="color:#1F7A4D">3/3</div><div class="l">Blocked by GRD</div></div>
-  <div class="st"><div class="n" style="color:#1F7A4D">0.0%</div><div class="l">Proxy Influence (Treatment)</div></div>
+  <div class="st"><div id="proxiesFound" class="n" style="color:#1F7A4D"></div><div class="l">Proxies Found</div></div>
+  <div class="st"><div id="proxiesBlocked" class="n" style="color:#1F7A4D"></div><div class="l">Blocked by GRD</div></div>
+  <div class="st"><div id="proxyInfluence" class="n" style="color:#1F7A4D"></div><div class="l">Proxy Influence (Treatment)</div></div>
 </div>
 <div id="proxyTests"></div>
 </div></div>
@@ -323,7 +323,7 @@ const GRD = {
 };
 
 // ── 2. PROXY TEST DATA ───────────────────────────────────────
-const PROXIES = [
+let PROXIES = [
   {
     feature: "supplier_employee_count",
     label: "Employee Count → Diversity Status",
@@ -355,6 +355,21 @@ const PROXIES = [
     detail: "Across all 10,000 transactions, supplier_founding_year has a Pearson correlation of r = +0.382 with diversity_certified. Diversity certification programs expanded in the 2000s, so newer companies are disproportionately certified. The Control model uses founding year and learns 'older = more established = better cost-reduction track record,' which systematically disadvantages newer, diversity-certified suppliers. The Treatment model excludes this feature per GRD Rule R2."
   }
 ];
+
+function mapProxiesFromEngineReport(report) {
+  const proxies = report?.proxy_detection?.results;
+  if (!Array.isArray(proxies) || proxies.length === 0) return null;
+  return PROXIES.map(p => {
+    const proxy = proxies.find(pr => pr.feature === p.feature);
+    if (!proxy) return p;
+    return {
+      ...p,
+      observed_r: proxy.correlation,
+      p_value: proxy.p_value,
+      status: proxy.blocked ? 'BLOCKED' : 'PROXY',
+    };
+  });
+}
 
 // ── 3. THRESHOLD DATA ────────────────────────────────────────
 let THRESHOLDS = [
@@ -441,17 +456,6 @@ function mapThresholdsFromEngineReport(report) {
       action: row.recalibration_action || existing.action
     };
   });
-}
-
-async function loadEngineReport() {
-  try {
-    const response = await fetch(ENGINE_REPORT_PATH, { cache: 'no-store' });
-    if (!response.ok) throw new Error(`Failed to load ${ENGINE_REPORT_PATH}: ${response.status}`);
-    return await response.json();
-  } catch (error) {
-    console.warn('Falling back to embedded dashboard constants:', error);
-    return null;
-  }
 }
 
 // ── 4. HCI DATA ──────────────────────────────────────────────
@@ -679,6 +683,17 @@ const CLAIMS = [
   }
 ];
 
+async function loadEngineReport() {
+  try {
+    const response = await fetch(ENGINE_REPORT_PATH, { cache: 'no-store' });
+    if (!response.ok) throw new Error(`Failed to load ${ENGINE_REPORT_PATH}: ${response.status}`);
+    return await response.json();
+  } catch (error) {
+    console.warn('Falling back to embedded dashboard constants:', error);
+    return null;
+  }
+}
+
 // ═══════════════════════════════════════════════════════════════
 // 7. RENDER FUNCTIONS
 // ═══════════════════════════════════════════════════════════════
@@ -904,8 +919,18 @@ async function run() {
   const engineReport = await loadEngineReport();
   console.log("Loaded engine report");
   const mappedThresholds = mapThresholdsFromEngineReport(engineReport);
-  console.log("Mapped thresholds", mappedThresholds);
   if (mappedThresholds) THRESHOLDS = mappedThresholds;
+
+  const mappedProxies = mapProxiesFromEngineReport(engineReport);
+  if (mappedProxies) PROXIES = mappedProxies;
+
+  const proxiesFound = document.getElementById('proxiesFound');
+  const proxiesBlocked = document.getElementById('proxiesBlocked');
+  const proxyInfluence = document.getElementById('proxyInfluence');
+  const totalCandidatesString = "/" + (engineReport?.proxy_detection?.total_candidates ?? 3);
+  if (proxiesFound) proxiesFound.textContent = engineReport?.proxy_detection?.proxies_found + totalCandidatesString;
+  if (proxiesBlocked) proxiesBlocked.textContent = engineReport?.proxy_detection?.proxies_blocked + totalCandidatesString;
+  if (proxyInfluence) proxyInfluence.textContent = engineReport?.proxy_detection?.proxy_influence_pct + "%" ?? "0.0%";
 
   const phases = [
     { pid: 'p1', nid: 'n1', render: renderProxyTests },
