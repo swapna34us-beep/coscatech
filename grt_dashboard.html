@@ -278,6 +278,8 @@ Writing a governance document before building the AI cost approximately 2 hours 
 // GRT-HCI Dashboard — Interactive Script
 // ═══════════════════════════════════════════════════════════════
 
+const ENGINE_REPORT_PATH = 'grt_analysis_report.json';
+
 // ── 1. GRD DATA ──────────────────────────────────────────────
 const GRD = {
   id: "GRT-G-002",
@@ -355,7 +357,7 @@ const PROXIES = [
 ];
 
 // ── 3. THRESHOLD DATA ────────────────────────────────────────
-const THRESHOLDS = [
+let THRESHOLDS = [
   {
     id: "T1", name: "Data Vintage Expiry", status: "PENDING",
     fire_rate: 0, fire_count: 0, total: 10000,
@@ -397,6 +399,60 @@ const THRESHOLDS = [
     action: "Define threshold function"
   }
 ];
+
+function formatPercentBandValue(value) {
+  const pct = value * 100;
+  const rounded = Math.round(pct);
+  return Math.abs(pct - rounded) < 1e-9 ? String(rounded) : pct.toFixed(1);
+}
+
+function mapThresholdStatus(status) {
+  const normalized = String(status || '').toUpperCase();
+  if (normalized === 'CALIBRATED' || normalized === 'UNDER' || normalized === 'OVER' || normalized === 'PENDING') {
+    return normalized;
+  }
+  return 'PENDING';
+}
+
+function mapThresholdsFromEngineReport(report) {
+  const results = report?.threshold_calibration?.results;
+  if (!Array.isArray(results) || results.length === 0) return null;
+
+  const byName = Object.fromEntries(results.map(r => [r.name, r]));
+  return THRESHOLDS.map(existing => {
+    const row = byName[existing.name];
+    if (!row) return existing;
+
+    const band = Array.isArray(row.target_fire_rate) && row.target_fire_rate.length === 2
+      ? [row.target_fire_rate[0], row.target_fire_rate[1]]
+      : existing.band;
+    const bandLabel = `${formatPercentBandValue(band[0])}–${formatPercentBandValue(band[1])}%`;
+
+    return {
+      ...existing,
+      status: mapThresholdStatus(row.status),
+      fire_rate: typeof row.fire_rate === 'number' ? row.fire_rate : existing.fire_rate,
+      fire_count: typeof row.fire_count === 'number' ? row.fire_count : existing.fire_count,
+      total: typeof row.total_count === 'number' ? row.total_count : existing.total,
+      band,
+      band_label: bandLabel,
+      laplace: row.laplace_interpretation || existing.laplace,
+      lyapunov: row.lyapunov_interpretation || existing.lyapunov,
+      action: row.recalibration_action || existing.action
+    };
+  });
+}
+
+async function loadEngineReport() {
+  try {
+    const response = await fetch(ENGINE_REPORT_PATH, { cache: 'no-store' });
+    if (!response.ok) throw new Error(`Failed to load ${ENGINE_REPORT_PATH}: ${response.status}`);
+    return await response.json();
+  } catch (error) {
+    console.warn('Falling back to embedded dashboard constants:', error);
+    return null;
+  }
+}
 
 // ── 4. HCI DATA ──────────────────────────────────────────────
 const HCI = {
@@ -839,11 +895,17 @@ function calcHCI() {
   document.getElementById('hci-interp').textContent = interp;
 }
 
-function run() {
+async function run() {
   const btn = document.getElementById('runBtn');
   btn.disabled = true;
   btn.classList.add('go');
   btn.textContent = 'Running…';
+
+  const engineReport = await loadEngineReport();
+  console.log("Loaded engine report");
+  const mappedThresholds = mapThresholdsFromEngineReport(engineReport);
+  console.log("Mapped thresholds", mappedThresholds);
+  if (mappedThresholds) THRESHOLDS = mappedThresholds;
 
   const phases = [
     { pid: 'p1', nid: 'n1', render: renderProxyTests },
