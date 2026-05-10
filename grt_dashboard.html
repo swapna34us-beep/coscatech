@@ -459,10 +459,19 @@ function mapThresholdsFromEngineReport(report) {
 }
 
 // ── 4. HCI DATA ──────────────────────────────────────────────
-const HCI = {
+let HCI = {
   Control:   { h_f: 0,    h_d: 0,    h_r: 0,    total: 0.000 },
   Treatment: { h_f: 0.93, h_d: 0.75, h_r: 0.80, total: 0.824 }
 };
+
+function mapHCIFromEngineReport(report) {
+  const results = report?.hci;
+  return Object.fromEntries(Object.entries(HCI).map(([key, value]) => {
+    const row = results[key];
+    if (!row) return [key, value];
+    return [key, { ...value, h_f: row.h_f, h_d: row.h_d, h_r: row.h_r, total: row.hci_geometric }];
+  }));
+}
 
 // ── 5. 19 METRICS ────────────────────────────────────────────
 const METRICS = [
@@ -923,6 +932,9 @@ async function run() {
 
   const mappedProxies = mapProxiesFromEngineReport(engineReport);
   if (mappedProxies) PROXIES = mappedProxies;
+
+  const mappedHci = mapHCIFromEngineReport(engineReport);
+  if (mappedHci) HCI = mappedHci;
 
   const proxiesFound = document.getElementById('proxiesFound');
   const proxiesBlocked = document.getElementById('proxiesBlocked');
