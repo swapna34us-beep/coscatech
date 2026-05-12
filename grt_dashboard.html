@@ -252,10 +252,10 @@ body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,sans-serif;b
 <div class="pb">
 <div class="info"><strong>How to read:</strong> Each metric tests one aspect of governance. Click any metric to expand: what it measures, how it connects to the actual supplier recommendations, what Control scored, what Treatment scored, and what the difference means.</div>
 <div class="sg">
-  <div class="st"><div class="n" style="color:#1F7A4D">14</div><div class="l">Pass</div></div>
-  <div class="st"><div class="n" style="color:#C0392B">1</div><div class="l">Fail</div></div>
-  <div class="st"><div class="n" style="color:#C55A11">4</div><div class="l">Pending</div></div>
-  <div class="st"><div class="n">-0.2%</div><div class="l">Accuracy Cost</div></div>
+  <div class="st"><div class="n" style="color:#1F7A4D" id="metricPassCount">14</div><div class="l">Pass</div></div>
+  <div class="st"><div class="n" style="color:#C0392B" id="metricFailCount">1</div><div class="l">Fail</div></div>
+  <div class="st"><div class="n" style="color:#C55A11" id="metricPendingCount">4</div><div class="l">Pending</div></div>
+  <div class="st"><div class="n" id="metricAccuracyCost">-0.2%</div><div class="l">Accuracy Cost</div></div>
 </div>
 <div id="metricTests"></div>
 </div></div>
@@ -474,7 +474,7 @@ function mapHCIFromEngineReport(report) {
 }
 
 // ── 5. 19 METRICS ────────────────────────────────────────────
-const METRICS = [
+let METRICS = [
   {
     id:"M1", name:"Goal Definition Maturity", layer:1,
     control_val:"2/12", treatment_val:"10/12", verdict:"PASS",
@@ -648,8 +648,36 @@ const METRICS = [
   }
 ];
 
+function formatMetricValue(raw) {
+  if (raw == null) return 'N/A';
+  if (typeof raw === 'number') {
+    if (Number.isInteger(raw)) return String(raw);
+    return raw.toFixed(4);
+  }
+  return String(raw);
+}
+
+function mapMetricsFromEngineReport(report) {
+  const scores = report?.scorecard?.scores;
+  if (!Array.isArray(scores) || scores.length === 0) return null;
+
+  const byId = Object.fromEntries(scores.map(s => [s.metric_id, s]));
+  return METRICS.map(existing => {
+    const row = byId[existing.id];
+    if (!row) return existing;
+
+    return {
+      ...existing,
+      control_val: formatMetricValue(row.control_value),
+      treatment_val: formatMetricValue(row.treatment_value),
+      verdict: row.verdict || existing.verdict,
+      finding: row.finding || existing.finding
+    };
+  });
+}
+
 // ── 6. CLAIM VERDICTS ────────────────────────────────────────
-const CLAIMS = [
+let CLAIMS = [
   {
     id:"C1", title:"Governance surfaces problems earlier",
     verdict:"CONFIRMED",
@@ -691,6 +719,34 @@ const CLAIMS = [
     detail:"The GRD cost approximately 2 hours of analyst time and −0.2% model accuracy. It produced: 3 proxy pathways blocked, 100% boundary enforcement, explicit deployment decision, 82% frame transparency, 90% auditability. The cost-benefit is structurally positive for a single run. Whether the framework pays for itself over multiple runs (durability) depends on M10–M13, which require post-deployment data."
   }
 ];
+
+function verdictToCssClass(verdict) {
+  const v = String(verdict || '').toUpperCase();
+  if (v === 'CONFIRMED') return 'pass';
+  if (v === 'PENDING' || v === 'PARTIALLY_CONFIRMED' || v === 'INCONCLUSIVE') return 'pending';
+  return 'fail';
+}
+
+function mapClaimsFromEngineReport(report) {
+  const claims = report?.scorecard?.claims;
+  if (!Array.isArray(claims) || claims.length === 0) return null;
+
+  const byId = Object.fromEntries(claims.map(c => [c.claim_id, c]));
+  return CLAIMS.map(existing => {
+    const row = byId[existing.id];
+    if (!row) return existing;
+
+    const allMetrics = [...(row.primary_metrics || []), ...(row.secondary_metrics || [])];
+
+    return {
+      ...existing,
+      verdict: row.verdict || existing.verdict,
+      verdictClass: verdictToCssClass(row.verdict),
+      metrics: allMetrics.length > 0 ? allMetrics : existing.metrics,
+      title: row.description || existing.title
+    };
+  });
+}
 
 async function loadEngineReport() {
   try {
@@ -943,6 +999,23 @@ async function run() {
   if (proxiesFound) proxiesFound.textContent = engineReport?.proxy_detection?.proxies_found + totalCandidatesString;
   if (proxiesBlocked) proxiesBlocked.textContent = engineReport?.proxy_detection?.proxies_blocked + totalCandidatesString;
   if (proxyInfluence) proxyInfluence.textContent = engineReport?.proxy_detection?.proxy_influence_pct + "%" ?? "0.0%";
+
+  const mappedMetrics = mapMetricsFromEngineReport(engineReport);
+  if (mappedMetrics) METRICS = mappedMetrics;
+
+  const mappedClaims = mapClaimsFromEngineReport(engineReport);
+  if (mappedClaims) CLAIMS = mappedClaims;
+
+  if (engineReport?.scorecard?.scores) {
+    const scores = engineReport.scorecard.scores;
+    const passCount = scores.filter(s => s.verdict === 'PASS').length;
+    const failCount = scores.filter(s => s.verdict === 'FAIL').length;
+    const pendingCount = scores.filter(s => s.verdict === 'PENDING' || s.verdict === 'INCONCLUSIVE').length;
+    const el = id => document.getElementById(id);
+    if (el('metricPassCount')) el('metricPassCount').textContent = passCount;
+    if (el('metricFailCount')) el('metricFailCount').textContent = failCount;
+    if (el('metricPendingCount')) el('metricPendingCount').textContent = pendingCount;
+  }
 
   const phases = [
     { pid: 'p1', nid: 'n1', render: renderProxyTests },
