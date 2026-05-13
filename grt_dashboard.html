@@ -137,9 +137,9 @@ body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,sans-serif;b
 <div class="info"><strong>The question:</strong> Can the model figure out which suppliers are diversity-certified even though that field is hidden? If employee_count, region, or founding_year correlate with diversity status, the model can learn the pattern indirectly.</div>
 <div class="example"><strong>Concrete example:</strong> SmallSupplier_007 has 45 employees, is based in the West, and was founded in 2004. It's diversity-certified. LargeSupplier_054 has 15,772 employees, is in the Southwest, and was founded in 1968. It's not diversity-certified. If the model learns "small + West + newer = lower cost-reduction potential," it's effectively learning "diversity-certified = lower priority" — without ever seeing the diversity field.</div>
 <div class="sg" style="grid-template-columns:repeat(3,1fr)">
-  <div class="st"><div class="n" style="color:#1F7A4D">3/3</div><div class="l">Proxies Found</div></div>
-  <div class="st"><div class="n" style="color:#1F7A4D">3/3</div><div class="l">Blocked by GRD</div></div>
-  <div class="st"><div class="n" style="color:#1F7A4D">0.0%</div><div class="l">Proxy Influence (Treatment)</div></div>
+  <div class="st"><div id="proxiesFound" class="n" style="color:#1F7A4D"></div><div class="l">Proxies Found</div></div>
+  <div class="st"><div id="proxiesBlocked" class="n" style="color:#1F7A4D"></div><div class="l">Blocked by GRD</div></div>
+  <div class="st"><div id="proxyInfluence" class="n" style="color:#1F7A4D"></div><div class="l">Proxy Influence (Treatment)</div></div>
 </div>
 <div id="proxyTests"></div>
 </div></div>
@@ -252,10 +252,10 @@ body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,sans-serif;b
 <div class="pb">
 <div class="info"><strong>How to read:</strong> Each metric tests one aspect of governance. Click any metric to expand: what it measures, how it connects to the actual supplier recommendations, what Control scored, what Treatment scored, and what the difference means.</div>
 <div class="sg">
-  <div class="st"><div class="n" style="color:#1F7A4D">14</div><div class="l">Pass</div></div>
-  <div class="st"><div class="n" style="color:#C0392B">1</div><div class="l">Fail</div></div>
-  <div class="st"><div class="n" style="color:#C55A11">4</div><div class="l">Pending</div></div>
-  <div class="st"><div class="n">-0.2%</div><div class="l">Accuracy Cost</div></div>
+  <div class="st"><div class="n" style="color:#1F7A4D" id="metricPassCount">14</div><div class="l">Pass</div></div>
+  <div class="st"><div class="n" style="color:#C0392B" id="metricFailCount">1</div><div class="l">Fail</div></div>
+  <div class="st"><div class="n" style="color:#C55A11" id="metricPendingCount">4</div><div class="l">Pending</div></div>
+  <div class="st"><div class="n" id="metricAccuracyCost">-0.2%</div><div class="l">Accuracy Cost</div></div>
 </div>
 <div id="metricTests"></div>
 </div></div>
@@ -277,6 +277,8 @@ Writing a governance document before building the AI cost approximately 2 hours 
 // ═══════════════════════════════════════════════════════════════
 // GRT-HCI Dashboard — Interactive Script
 // ═══════════════════════════════════════════════════════════════
+
+const ENGINE_REPORT_PATH = 'grt_analysis_report.json';
 
 // ── 1. GRD DATA ──────────────────────────────────────────────
 const GRD = {
@@ -321,7 +323,7 @@ const GRD = {
 };
 
 // ── 2. PROXY TEST DATA ───────────────────────────────────────
-const PROXIES = [
+let PROXIES = [
   {
     feature: "supplier_employee_count",
     label: "Employee Count → Diversity Status",
@@ -354,8 +356,23 @@ const PROXIES = [
   }
 ];
 
+function mapProxiesFromEngineReport(report) {
+  const proxies = report?.proxy_detection?.results;
+  if (!Array.isArray(proxies) || proxies.length === 0) return null;
+  return PROXIES.map(p => {
+    const proxy = proxies.find(pr => pr.feature === p.feature);
+    if (!proxy) return p;
+    return {
+      ...p,
+      observed_r: proxy.correlation,
+      p_value: proxy.p_value,
+      status: proxy.blocked ? 'BLOCKED' : 'PROXY',
+    };
+  });
+}
+
 // ── 3. THRESHOLD DATA ────────────────────────────────────────
-const THRESHOLDS = [
+let THRESHOLDS = [
   {
     id: "T1", name: "Data Vintage Expiry", status: "PENDING",
     fire_rate: 0, fire_count: 0, total: 10000,
@@ -398,14 +415,66 @@ const THRESHOLDS = [
   }
 ];
 
+function formatPercentBandValue(value) {
+  const pct = value * 100;
+  const rounded = Math.round(pct);
+  return Math.abs(pct - rounded) < 1e-9 ? String(rounded) : pct.toFixed(1);
+}
+
+function mapThresholdStatus(status) {
+  const normalized = String(status || '').toUpperCase();
+  if (normalized === 'CALIBRATED' || normalized === 'UNDER' || normalized === 'OVER' || normalized === 'PENDING') {
+    return normalized;
+  }
+  return 'PENDING';
+}
+
+function mapThresholdsFromEngineReport(report) {
+  const results = report?.threshold_calibration?.results;
+  if (!Array.isArray(results) || results.length === 0) return null;
+
+  const byName = Object.fromEntries(results.map(r => [r.name, r]));
+  return THRESHOLDS.map(existing => {
+    const row = byName[existing.name];
+    if (!row) return existing;
+
+    const band = Array.isArray(row.target_fire_rate) && row.target_fire_rate.length === 2
+      ? [row.target_fire_rate[0], row.target_fire_rate[1]]
+      : existing.band;
+    const bandLabel = `${formatPercentBandValue(band[0])}–${formatPercentBandValue(band[1])}%`;
+
+    return {
+      ...existing,
+      status: mapThresholdStatus(row.status),
+      fire_rate: typeof row.fire_rate === 'number' ? row.fire_rate : existing.fire_rate,
+      fire_count: typeof row.fire_count === 'number' ? row.fire_count : existing.fire_count,
+      total: typeof row.total_count === 'number' ? row.total_count : existing.total,
+      band,
+      band_label: bandLabel,
+      laplace: row.laplace_interpretation || existing.laplace,
+      lyapunov: row.lyapunov_interpretation || existing.lyapunov,
+      action: row.recalibration_action || existing.action
+    };
+  });
+}
+
 // ── 4. HCI DATA ──────────────────────────────────────────────
-const HCI = {
+let HCI = {
   Control:   { h_f: 0,    h_d: 0,    h_r: 0,    total: 0.000 },
   Treatment: { h_f: 0.93, h_d: 0.75, h_r: 0.80, total: 0.824 }
 };
 
+function mapHCIFromEngineReport(report) {
+  const results = report?.hci;
+  return Object.fromEntries(Object.entries(HCI).map(([key, value]) => {
+    const row = results[key];
+    if (!row) return [key, value];
+    return [key, { ...value, h_f: row.h_f, h_d: row.h_d, h_r: row.h_r, total: row.hci_geometric }];
+  }));
+}
+
 // ── 5. 19 METRICS ────────────────────────────────────────────
-const METRICS = [
+let METRICS = [
   {
     id:"M1", name:"Goal Definition Maturity", layer:1,
     control_val:"2/12", treatment_val:"10/12", verdict:"PASS",
@@ -579,8 +648,36 @@ const METRICS = [
   }
 ];
 
+function formatMetricValue(raw) {
+  if (raw == null) return 'N/A';
+  if (typeof raw === 'number') {
+    if (Number.isInteger(raw)) return String(raw);
+    return raw.toFixed(4);
+  }
+  return String(raw);
+}
+
+function mapMetricsFromEngineReport(report) {
+  const scores = report?.scorecard?.scores;
+  if (!Array.isArray(scores) || scores.length === 0) return null;
+
+  const byId = Object.fromEntries(scores.map(s => [s.metric_id, s]));
+  return METRICS.map(existing => {
+    const row = byId[existing.id];
+    if (!row) return existing;
+
+    return {
+      ...existing,
+      control_val: formatMetricValue(row.control_value),
+      treatment_val: formatMetricValue(row.treatment_value),
+      verdict: row.verdict || existing.verdict,
+      finding: row.finding || existing.finding
+    };
+  });
+}
+
 // ── 6. CLAIM VERDICTS ────────────────────────────────────────
-const CLAIMS = [
+let CLAIMS = [
   {
     id:"C1", title:"Governance surfaces problems earlier",
     verdict:"CONFIRMED",
@@ -622,6 +719,45 @@ const CLAIMS = [
     detail:"The GRD cost approximately 2 hours of analyst time and −0.2% model accuracy. It produced: 3 proxy pathways blocked, 100% boundary enforcement, explicit deployment decision, 82% frame transparency, 90% auditability. The cost-benefit is structurally positive for a single run. Whether the framework pays for itself over multiple runs (durability) depends on M10–M13, which require post-deployment data."
   }
 ];
+
+function verdictToCssClass(verdict) {
+  const v = String(verdict || '').toUpperCase();
+  if (v === 'CONFIRMED') return 'pass';
+  if (v === 'PENDING' || v === 'PARTIALLY_CONFIRMED' || v === 'INCONCLUSIVE') return 'pending';
+  return 'fail';
+}
+
+function mapClaimsFromEngineReport(report) {
+  const claims = report?.scorecard?.claims;
+  if (!Array.isArray(claims) || claims.length === 0) return null;
+
+  const byId = Object.fromEntries(claims.map(c => [c.claim_id, c]));
+  return CLAIMS.map(existing => {
+    const row = byId[existing.id];
+    if (!row) return existing;
+
+    const allMetrics = [...(row.primary_metrics || []), ...(row.secondary_metrics || [])];
+
+    return {
+      ...existing,
+      verdict: row.verdict || existing.verdict,
+      verdictClass: verdictToCssClass(row.verdict),
+      metrics: allMetrics.length > 0 ? allMetrics : existing.metrics,
+      title: row.description || existing.title
+    };
+  });
+}
+
+async function loadEngineReport() {
+  try {
+    const response = await fetch(ENGINE_REPORT_PATH, { cache: 'no-store' });
+    if (!response.ok) throw new Error(`Failed to load ${ENGINE_REPORT_PATH}: ${response.status}`);
+    return await response.json();
+  } catch (error) {
+    console.warn('Falling back to embedded dashboard constants:', error);
+    return null;
+  }
+}
 
 // ═══════════════════════════════════════════════════════════════
 // 7. RENDER FUNCTIONS
@@ -839,11 +975,47 @@ function calcHCI() {
   document.getElementById('hci-interp').textContent = interp;
 }
 
-function run() {
+async function run() {
   const btn = document.getElementById('runBtn');
   btn.disabled = true;
   btn.classList.add('go');
   btn.textContent = 'Running…';
+
+  const engineReport = await loadEngineReport();
+  console.log("Loaded engine report");
+  const mappedThresholds = mapThresholdsFromEngineReport(engineReport);
+  if (mappedThresholds) THRESHOLDS = mappedThresholds;
+
+  const mappedProxies = mapProxiesFromEngineReport(engineReport);
+  if (mappedProxies) PROXIES = mappedProxies;
+
+  const mappedHci = mapHCIFromEngineReport(engineReport);
+  if (mappedHci) HCI = mappedHci;
+
+  const proxiesFound = document.getElementById('proxiesFound');
+  const proxiesBlocked = document.getElementById('proxiesBlocked');
+  const proxyInfluence = document.getElementById('proxyInfluence');
+  const totalCandidatesString = "/" + (engineReport?.proxy_detection?.total_candidates ?? 3);
+  if (proxiesFound) proxiesFound.textContent = engineReport?.proxy_detection?.proxies_found + totalCandidatesString;
+  if (proxiesBlocked) proxiesBlocked.textContent = engineReport?.proxy_detection?.proxies_blocked + totalCandidatesString;
+  if (proxyInfluence) proxyInfluence.textContent = engineReport?.proxy_detection?.proxy_influence_pct + "%" ?? "0.0%";
+
+  const mappedMetrics = mapMetricsFromEngineReport(engineReport);
+  if (mappedMetrics) METRICS = mappedMetrics;
+
+  const mappedClaims = mapClaimsFromEngineReport(engineReport);
+  if (mappedClaims) CLAIMS = mappedClaims;
+
+  if (engineReport?.scorecard?.scores) {
+    const scores = engineReport.scorecard.scores;
+    const passCount = scores.filter(s => s.verdict === 'PASS').length;
+    const failCount = scores.filter(s => s.verdict === 'FAIL').length;
+    const pendingCount = scores.filter(s => s.verdict === 'PENDING' || s.verdict === 'INCONCLUSIVE').length;
+    const el = id => document.getElementById(id);
+    if (el('metricPassCount')) el('metricPassCount').textContent = passCount;
+    if (el('metricFailCount')) el('metricFailCount').textContent = failCount;
+    if (el('metricPendingCount')) el('metricPendingCount').textContent = pendingCount;
+  }
 
   const phases = [
     { pid: 'p1', nid: 'n1', render: renderProxyTests },
