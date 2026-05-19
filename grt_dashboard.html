@@ -66,12 +66,20 @@ body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,sans-serif;b
 .rec-tbl td{padding:4px 8px;border-bottom:1px solid #e8eef4}
 .rec-tbl .hl{background:#fff8e1}
 .hidden{display:none}
+.adjust-thresholds{margin-top:10px;padding:10px;background:#f5f8fc;border-radius:6px}
+.adjust-thresholds p{font-size:12px;margin-bottom:6px;font-weight:600;}
+.adjust-thresholds input{padding:3px;font-size:11px;margin-top:2px;border:1px solid #d0dbe6;border-radius:4px;width:50px;}
+.threshold-input-separator{margin:0 4px;font-size:11px;color:#666;}
+.threshold-inputs{display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;}
 </style>
 </head>
 <body>
 <div class="top">
   <h1>GRT-HCI Governance Validator<span>Stanford McCoy Center 2026</span></h1>
-  <button class="rb" id="runBtn" onclick="run()">Run Experiment</button>
+  <div class="rb-container">
+    <button class="rb" id="runBtn" onclick="run()">Run Experiment</button>
+    <button class="rb" id="resetBtn" onclick="reset()">Reset</button>
+  </div>
 </div>
 <div class="w">
 
@@ -279,6 +287,7 @@ Writing a governance document before building the AI cost approximately 2 hours 
 // ═══════════════════════════════════════════════════════════════
 
 const ENGINE_REPORT_PATH = 'grt_analysis_report.json';
+const ENGINE_RUN_ENDPOINT = '/api/run';
 
 // ── 1. GRD DATA ──────────────────────────────────────────────
 const GRD = {
@@ -748,7 +757,66 @@ function mapClaimsFromEngineReport(report) {
   });
 }
 
+function parseBand(bandStr) {
+  // "10–25%" or "10-25%" -> [0.10, 0.25]
+  if (!bandStr) return [0, 0];
+  const match = String(bandStr).match(/(\d+(?:\.\d+)?)\s*[–-]\s*(\d+(?:\.\d+)?)/);
+  if (!match) return [0, 0];
+  return [parseFloat(match[1]) / 100, parseFloat(match[2]) / 100];
+}
+
+function renderThresholdInputs() {
+  const container = document.getElementById('thresholdInputs');
+  if (!container) return;
+  let h = '';
+  GRD.thresholds.forEach(t => {
+    const [lo, hi] = parseBand(t.band);
+    const id = t.id.toLowerCase();
+    h += '<div>';
+    h += '<p>' + t.id + ' <span style="font-weight:400;color:#666;font-size:10px">' + t.name + '</span></p>';
+    h += '<input id="' + id + '-low" type="number" step="0.01" min="0" max="1" value="' + lo.toFixed(2) + '" class="threshold-input" />';
+    h += '<span class="threshold-input-separator">–</span>';
+    h += '<input id="' + id + '-high" type="number" step="0.01" min="0" max="1" value="' + hi.toFixed(2) + '" class="threshold-input" />';
+    h += '</div>';
+  });
+  container.innerHTML = h;
+}
+
+function readThresholdInputs() {
+  const out = {};
+  GRD.thresholds.forEach(t => {
+    const id = t.id.toLowerCase();
+    const lowEl = document.getElementById(id + '-low');
+    const highEl = document.getElementById(id + '-high');
+    if (!lowEl || !highEl) return;
+    const low = parseFloat(lowEl.value);
+    const high = parseFloat(highEl.value);
+    if (!Number.isFinite(low) || !Number.isFinite(high)) return;
+    out[t.id] = { low, high };
+  });
+  return out;
+}
+
 async function loadEngineReport() {
+  const thresholds = readThresholdInputs();
+
+  // First try the live engine endpoint so the user's threshold bands are
+  // actually fed into the GRT engine on each run.
+  try {
+    const response = await fetch(ENGINE_RUN_ENDPOINT, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      cache: 'no-store',
+      body: JSON.stringify({ thresholds })
+    });
+    if (!response.ok) throw new Error(`Engine run failed (${response.status})`);
+    return await response.json();
+  } catch (error) {
+    console.warn('Live engine endpoint unavailable, falling back to cached report:', error);
+  }
+
+  // Fallback: read the last persisted analysis report. Note this will NOT
+  // reflect any new threshold bands the user typed in.
   try {
     const response = await fetch(ENGINE_REPORT_PATH, { cache: 'no-store' });
     if (!response.ok) throw new Error(`Failed to load ${ENGINE_REPORT_PATH}: ${response.status}`);
@@ -783,6 +851,11 @@ function renderGRD() {
   GRD.thresholds.forEach(t => {
     h += '<div style="font-size:11px;padding:4px 8px;margin-bottom:3px;background:#f5f8fc;border-radius:3px"><strong>' + t.id + ':</strong> ' + t.name + ' — Target band: ' + t.band + '. Trigger: ' + t.trigger + '</div>';
   });
+
+  h += '<div class="adjust-thresholds">'
+    h += '<p>Adjust target fire-rate bands (decimal 0–1) for thresholds</p>'
+    h += '<div class="threshold-inputs" id="thresholdInputs"></div>'
+  h += '</div>'
 
   h += '<div class="dl" style="margin-top:8px">Residue Domains (5)</div>';
   GRD.residueDomains.forEach(d => {
@@ -1064,13 +1137,52 @@ async function run() {
     btn.classList.remove('go');
     btn.classList.add('ok');
     btn.textContent = 'Complete ✓';
+
+    const resetBtn = document.getElementById('resetBtn');
+    resetBtn.disabled = false;
+    resetBtn.classList.remove('ok');
+    resetBtn.classList.remove('go');
+    resetBtn.textContent = 'Reset';
   }, delay + 400);
+}
+
+async function reset() {
+  const btn = document.getElementById('resetBtn');
+  btn.disabled = true;
+  btn.classList.add('go');
+  btn.textContent = 'Resetting…';
+  renderGRD();
+  renderThresholdInputs();
+
+  const phases = [
+    { pid: 'p1', nid: 'n1' },
+    { pid: 'p2', nid: 'n2' },
+    { pid: 'p3', nid: 'n3' },
+    { pid: 'p4', nid: 'n4' },
+    { pid: 'p5', nid: 'n5' }
+  ];
+
+  phases.forEach((ph, i) => {
+    const p = document.getElementById(ph.pid);
+    if (p) p.classList.add('hidden');
+  });
+
+  const runBtn = document.getElementById('runBtn');
+  runBtn.disabled = false;
+  runBtn.textContent = 'Run Experiment';
+  runBtn.classList.remove('ok');
+
+  btn.classList.remove('go');
+  btn.classList.add('ok');
+  btn.textContent = 'Reset ✓';
+  btn.disabled = false;
 }
 
 // ═══════════════════════════════════════════════════════════════
 // 9. INIT — render GRD on page load
 // ═══════════════════════════════════════════════════════════════
 renderGRD();
+renderThresholdInputs();
 </script>
 </body>
 </html>
