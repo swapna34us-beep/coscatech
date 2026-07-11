@@ -1,0 +1,48 @@
+{
+  "spec_id": "GRT-AGENT-CHAIN-v1",
+  "name": "GRT Agent Chain with 7-Layer Truth Validation",
+  "version": "1.0.0-draft",
+  "author": "Swapna Ketavarapu",
+  "date": "2026-04-22",
+  "description": "A governed chain of AI agents that produces a verified GRD and working governed system. Each agent has its own GRT. Versions are frozen and validated against the 7 Layers of Truth. A self-improvement loop governed by an Evolution Agent updates prompts across versions.",
+
+  "seven_layers_of_truth": {
+    "order": "bottom_to_top",
+    "progression": "Quantum > Physical > Biological > Cognitive > Cultural > Civilizational > Meta",
+    "layers": [
+      { "level": 1, "name": "Quantum", "essence": "Possibility, imagination, hypothetical states", "freeze_gate": "Does the version leave room for evolution? Temporal expiry set? Composability hooks defined?" },
+      { "level": 2, "name": "Physical", "essence": "Space, body, environment, material reality", "freeze_gate": "Tests pass? Connectors healthy? Data flowing? Within budget?" },
+      { "level": 3, "name": "Biological", "essence": "Emotion, nervous system response, instinct", "freeze_gate": "Fire rate <40%? Override flow ≤3 clicks? Human capacity respected?" },
+      { "level": 4, "name": "Cognitive", "essence": "Reasoning, logic, assumptions, belief", "freeze_gate": "No contradictions? Validator passed? Assumptions testable?" },
+      { "level": 5, "name": "Cultural", "essence": "Identity, norms, language, shared meanings", "freeze_gate": "Cultural assumptions declared? Frame origin culturally situated? Language inclusive?" },
+      { "level": 6, "name": "Civilizational", "essence": "Systems, laws, policies, institutions", "freeze_gate": "Regulatory aligned? Authority routing maps to real roles? Composable?" },
+      { "level": 7, "name": "Meta", "essence": "Ideals, morality, big-picture truths", "freeze_gate": "Serves moral purpose? Incentive mapping honest? Makes things better?" }
+    ]
+  },
+
+  "agents": [
+    { "id": 0, "name": "Incentive Auditor", "phase": "pre-chain", "goal": "Map incentive structure — who benefits, who pays, where biases accumulate", "rules": ["Run BEFORE chain starts", "Run AFTER each phase", "Never allow self-evaluation"], "thresholds": ["Overconfidence >90% for 5 runs → flag", "Rejection/self-score mismatch → misalignment", "Evolution Agent self-serving → escalate"] },
+    { "id": 1, "name": "Domain Analyst", "phase": "define", "goal": "Extract decision space, stakeholders, data, risks. Classify truth layer.", "rules": ["Never assume data exists", "Never omit cost-bearing stakeholders", "Must identify truth layer"], "thresholds": [">2 unidentifiable stakeholders → escalate", "Unmappable regulation → flag"] },
+    { "id": 2, "name": "Goal Architect", "phase": "define", "goal": "Draft Goal with 6 criteria (frame, residue, incentive, non-goals, temporal, composability)", "rules": ["Must name frame owner", "Must set temporal expiry", "Must declare residue"], "thresholds": ["Score <8/12 → iterate", "Non-goals indistinguishable → escalate"] },
+    { "id": 3, "name": "Rule Derivation", "phase": "define", "goal": "Derive 3-7 rules with enforcement mechanisms", "rules": ["Every rule testable", "Every rule has enforcement", "Proxy pathways addressed if r>0.05"], "thresholds": ["<3 rules → under-governed", ">7 rules → over-governed", "Untestable rule → escalate"] },
+    { "id": 4, "name": "Threshold Calibrator", "phase": "define", "goal": "Define 3-7 thresholds with fire-rate bands and authority routing", "rules": ["Must name knowledge owner", "Band ≤20pp wide", "Recalibration action defined"], "thresholds": ["Rate not estimable → PENDING", "Overlapping triggers → merge", "Owner TBD → block"] },
+    { "id": 5, "name": "Residue & HCI Analyst", "phase": "define", "goal": "Map residue domains, reason weights, deployment level, expected HCI", "rules": ["No Level 1 if high residue", "Every domain has weight", "HCI computed before level declared"], "thresholds": ["HCI <0.3 → redesign", "Level conflicts residue → escalate", "Weights >4.0 → simplify"] },
+    { "id": 6, "name": "Validator / Adversary", "phase": "define", "goal": "Find gaps and weaknesses. Test against adversarial scenarios.", "rules": ["Test every rule for enforceability", "Never suppress findings", "≥3 adversarial scenarios"], "thresholds": [">3 critical weaknesses → block", "Unblocked proxy → critical", "TBD in roster → block"] },
+    { "id": 7, "name": "Finalizer", "phase": "define", "goal": "Produce valid GRD JSON incorporating validation feedback", "rules": ["Must pass schema validation", "Never drop findings without resolution", "Round-trip property preserved"], "thresholds": ["Unresolved critical → refuse", "JSON >50KB → simplify"] },
+    { "id": 8, "name": "UX Architect", "phase": "build", "goal": "Design UI making governance visible and actionable", "rules": ["Every threshold fire visible", "Residue shown before accept", "Override structured", "Never auto-dismiss"], "thresholds": ["Override >3 clicks → simplify", "Residue >40% viewport → condense", "Rule without UI → flag"] },
+    { "id": 9, "name": "Connector Identifier", "phase": "build", "goal": "Map all integration points required by GRD", "rules": ["Never assume undocumented API", "Data contract required", "Failure mode defined"], "thresholds": [">3 undocumented assumptions → escalate", "No endpoint for routing → block", "Freshness not guaranteed → flag"] },
+    { "id": 10, "name": "Connecting Agent", "phase": "build", "goal": "Build connectors enforcing authority routing and data contracts", "rules": ["Never bypass roster", "Never swallow overrides", "Auth required", "Health checks required"], "thresholds": ["Silent failure → critical", "Latency >5s → flag", "Retry >3 without escalation → flag"] },
+    { "id": 11, "name": "Test Case Author", "phase": "test", "goal": "Write tests verifying governance holds", "rules": ["Every rule has a test", "Every threshold has boundary test", "Every proxy has exclusion test", "Never pass when governance violated", "HCI has property test"], "thresholds": ["Coverage <80% → flag", "No fire-rate test → flag", "Non-deterministic without reason → flag"] },
+    { "id": 12, "name": "Testing Agent", "phase": "test", "goal": "Run tests, report honestly, map failures to GRD violations", "rules": ["Never suppress failure", "Never mark known without sign-off", "Never retry >1 without flag", "Report proxy influence every run"], "thresholds": [">2 critical failures → HALT", "Fire rate deviates >20% → recalibrate", "HCI drops below target → escalate"] },
+    { "id": 13, "name": "Deployment Gate", "phase": "deploy", "goal": "Go/no-go decision. Run 7-layer freeze validation.", "rules": ["No deploy if critical test fails", "No deploy if TBD in roster", "Must have deployment level + rationale", "HCI must meet minimum"], "thresholds": ["Level 1 + residue >3 → block", ">1 threshold PENDING → block", "Exceeds temporal condition → block (stale)"] },
+    { "id": 14, "name": "Performance Monitor", "phase": "evolve", "goal": "Track agent effectiveness across runs", "rules": ["Never modify frozen agent", "Never discard data", "Normalize cross-domain comparisons"], "thresholds": ["Rejection >30% → flag revision", "Threshold fires >50% → recalibrate", "Latency >3x median → optimize"] },
+    { "id": 15, "name": "Version Controller", "phase": "evolve", "goal": "Freeze versions, track lineage, gate releases", "rules": ["Frozen = immutable", "A/B validation required", "Documented reason from Monitor", "One agent change per increment"], "thresholds": [">5 changes pending → force review", "A/B regression → block", "6 months stale + degrading → flag"] },
+    { "id": 16, "name": "Evolution Agent", "phase": "evolve", "goal": "Write improved prompts/configs from Monitor findings", "rules": ["Never change goal without human", "Preserve rules unless deprecated", "Data-justified thresholds only", "Self-validate via Agent 6", "Never remove productive threshold"], "thresholds": ["Affects >3 agents → full re-validation", "Contradicts root rule → escalate", "Not A/B testable → defer"] }
+  ],
+
+  "root_grd": {
+    "goal": "Given a domain/problem, produce a verified GRD + governed system + tested deployment. All agents governed. All versions truth-validated.",
+    "rules": ["Never deploy without validated GRD", "Never modify frozen agent in-place", "Never skip human review at phase transitions", "Never allow agent self-evaluation without external check"],
+    "thresholds": ["Any phase <70% confidence → pause", ">3 agents escalate in same run → halt", "7-layer validation fails → block freeze and return to responsible agent"]
+  }
+}
