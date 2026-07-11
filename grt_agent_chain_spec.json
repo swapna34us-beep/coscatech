@@ -6,6 +6,126 @@
   "date": "2026-04-22",
   "description": "A governed chain of AI agents that produces a verified GRD and working governed system. Each agent has its own GRT. Versions are frozen and validated against the 7 Layers of Truth. A self-improvement loop governed by an Evolution Agent updates prompts across versions.",
 
+  "self_audit_principle_1_frame_origin": {
+    "frame_author": "Swapna Ketavarapu",
+    "frame_tradition": "Control theory (Laplace/Lyapunov) + HAZOP (chemical process safety) + AI governance (NIST/ISO/EU AI Act)",
+    "frame_institution": "Stanford McCoy Family Center for Ethics in Society, Practitioner Fellowship 2026",
+    "frame_challenge_procedure": {
+      "who_can_challenge": "Any authority role + any external reviewer + any affected stakeholder",
+      "challenge_mechanism": "Submit written challenge to ethical_escalation with specific evidence of frame inadequacy",
+      "resolution_timeline": "21 days from submission. If unresolved, escalate to external ethics auditor.",
+      "challenge_types": [
+        "Layer model challenge — why 7 layers? Why this order? Is the progression correct for non-Western contexts?",
+        "Agent structure challenge — why 19 agents? Is the decomposition natural or forced?",
+        "Principle challenge — is a 7th principle missing? Is one of the 6 redundant?",
+        "Analogy challenge — is control theory the right framing? Does it distort governance into engineering language that hides political choices?",
+        "Scope challenge — does this spec claim to govern more than it can actually govern?"
+      ]
+    }
+  },
+
+  "self_audit_principle_2_per_agent_residue": {
+    "description": "What each agent DROPS in translation from input to output. This is the knowledge each agent cannot access or produce, no matter how well-prompted.",
+    "agent_residue": {
+      "agent_0_incentive_auditor": "Cannot perceive coercion or social pressure that isn't reflected in data patterns. Cannot detect incentives that actors consciously hide.",
+      "agent_1_domain_analyst": "Cannot perceive political dynamics between stakeholders. Cannot assess whether stated stakeholders are the real power holders or figureheads.",
+      "agent_2_goal_architect": "Cannot assess whether the named frame owner has genuine authority or is ceremonial. Cannot perceive unstated goals that stakeholders won't declare publicly.",
+      "agent_3_rule_derivation": "Cannot detect proxy pathways requiring domain expertise beyond statistical correlation. Cultural proxies that don't appear in data but exist in practice are invisible.",
+      "agent_4_threshold_calibrator": "Cannot determine correct fire rates without real operational data. Synthetic estimates are always approximate. Cannot predict how thresholds interact under load.",
+      "agent_5_residue_analyst": "Cannot weight residue domains without lived experience in the domain. Academic weighting differs from practitioner weighting.",
+      "agent_6_validator": "Cannot test against scenarios it hasn't imagined. Bounded by the creativity of its adversarial prompts. Cannot perceive unknown unknowns.",
+      "agent_7_finalizer": "Cannot judge whether the GRD is politically viable within the organization. Technical validity ≠ organizational adoptability.",
+      "agent_8_ux_architect": "Cannot test with real users. Assumes user behavior from heuristics. Cannot perceive accessibility barriers not in its training data.",
+      "agent_9_connector_identifier": "Cannot discover undocumented integrations. Shadow IT and informal processes are invisible.",
+      "agent_10_connecting_agent": "Cannot guarantee behavior under conditions not tested. Production environments differ from development in ways the connector cannot anticipate.",
+      "agent_11_test_case_author": "Tests only what was conceived. Cannot write tests for failure modes nobody has imagined yet.",
+      "agent_12_testing_agent": "Cannot detect governance violations that no test case covers. Cannot detect emergent behavior appearing only at scale or over long time horizons.",
+      "agent_13_deployment_gate": "Cannot assess organizational readiness (staffing, training, change management). Technical readiness ≠ organizational readiness.",
+      "agent_14_performance_monitor": "Cannot distinguish performance decline from environment change without external telemetry. Correlation ≠ causation in monitoring data.",
+      "agent_15_version_controller": "Cannot assess whether a frozen version is politically stable (stakeholders may accept it technically but resist it operationally).",
+      "agent_16_evolution_agent": "Cannot improve what it cannot measure. Improvements biased toward measurable dimensions, neglecting qualitative governance qualities.",
+      "agent_17_truth_conflict_resolver": "Cannot perceive power asymmetries that make one party's 'agreement' coerced rather than genuine. Documented consensus ≠ actual consensus.",
+      "agent_18_reality_feedback": "Cannot distinguish correlation from causation without controlled experiments. Observational data always has confounders it cannot identify."
+    }
+  },
+
+  "self_audit_principle_3_known_unknowns": {
+    "description": "What we know we don't know. This section will grow with each version.",
+    "unknowns": [
+      "How the chain behaves with >100 concurrent runs across different domains simultaneously",
+      "Whether the 7-layer truth model is sufficient for non-Western cultural contexts where the layer boundaries differ",
+      "Whether agent interactions produce emergent behavior not predicted by individual agent GRTs",
+      "Whether the cost model captures true governance cost (hidden costs: organizational friction, decision fatigue, opportunity cost of delayed deployment)",
+      "How the chain degrades when LLM capabilities change (model upgrades, deprecations, capability regressions)",
+      "Whether weighted goals create optimization pressure that sophisticated actors can game by manipulating weights within allowed bounds",
+      "Whether 19 agents is the right number or whether consolidation would produce better outcomes with less overhead",
+      "How the chain performs when the domain is genuinely novel (no prior art, no regulation, no existing stakeholder consensus)",
+      "Whether the Meta-presumption in Truth Conflict Resolution reflects genuine moral priority or merely the spec author's preference"
+    ]
+  },
+
+  "self_audit_principle_4_authority_concentration_check": {
+    "finding": "ethical_escalation role appears in ~60% of critical decision paths — disproportionate authority concentration",
+    "mitigation": {
+      "split_role": {
+        "ethics_review": "Day-to-day conflict resolution, weight approval for ethical sub-goals, routine Meta-layer assessments",
+        "ethics_board": "Structural decisions: goal changes, spec renewal, emergency circuit breaker release, Meta-presumption overrides"
+      },
+      "requirement": "Both ethics_review AND ethics_board must approve goal-level changes. Neither alone is sufficient.",
+      "external_accountability": {
+        "check": "ethics_board decisions reviewed by independent external ethics auditor annually",
+        "threshold": "If ethics_board overrides Meta presumption >3 times in 12 months → mandatory external review",
+        "auditor_selection": "External auditor must be independent of the organization, selected by evolution_approver from a pre-approved panel"
+      }
+    }
+  },
+
+  "self_audit_principle_5_temporal_provenance": {
+    "description": "Every agent prompt has a knowledge era. Prompts written in 2026 reflect 2026 governance knowledge. By 2028, they may be stale even if the version is still 'current'.",
+    "per_agent_provenance": {
+      "schema": {
+        "prompt_authored_date": "ISO8601 — when the agent's current prompt was written",
+        "knowledge_cutoff_era": "What era of governance/domain knowledge does this prompt reflect?",
+        "staleness_check_rule": "If (current_date - prompt_authored_date) > 12 months AND no Evolution update → flag as potentially stale",
+        "domain_validity_window": "How long is this prompt valid for the domain it was designed for? (e.g., procurement knowledge shifts every ~2 years; clinical knowledge every ~6 months)"
+      },
+      "current_values": {
+        "all_agents": {
+          "prompt_authored_date": "2026-04-22",
+          "knowledge_cutoff_era": "Pre-2026 governance frameworks (NIST AI RMF 1.0, ISO 42001:2023, EU AI Act 2024)",
+          "next_staleness_check": "2027-04-22"
+        }
+      }
+    }
+  },
+
+  "self_audit_principle_6_spec_incentive_mapping": {
+    "description": "Whose costs and benefits shaped THIS SPEC's form? Declaring the bias.",
+    "complexity_beneficiaries": [
+      "Spec author — comprehensive spec demonstrates depth and is publishable as academic contribution",
+      "Governance practitioners — more complexity justifies larger governance teams and higher consulting fees",
+      "Tool vendors — more agents and components = more tooling and platform opportunities"
+    ],
+    "complexity_cost_bearers": [
+      "Domain teams — must understand 19 agents, 7 layers, 6 principles, 6 authority roles to use the chain",
+      "Small organizations — cannot staff 6 distinct authority roles; may need to collapse roles",
+      "Fast-moving teams — governance overhead adds calendar time; 2-week chain run may be unacceptable for some domains"
+    ],
+    "declared_bias": "This spec is biased toward comprehensiveness over simplicity. The author's incentive (academic publication, framework establishment) favors depth. The Evolution Agent should monitor whether complexity is earning its keep via the cost model. If not, simplify.",
+    "minimum_viable_chain": {
+      "description": "For teams that cannot staff 19 agents or 6 authority roles",
+      "agents": [1, 2, 3, 4, 5, 6, 7, 13],
+      "agent_names": ["Domain Analyst", "Goal Architect", "Rule Derivation", "Threshold Calibrator", "Residue Analyst", "Validator", "Finalizer", "Deployment Gate"],
+      "collapsed_roles": {
+        "threshold_owner + override_owner": "Senior Domain Expert",
+        "ethical_escalation + evolution_approver": "Governance Lead",
+        "deployment_owner + reality_reviewer": "Technical Lead"
+      },
+      "deferred_phases": ["Build (Phase 2)", "Test (Phase 3)", "Evolve (Phase 5)"],
+      "note": "This produces a GRD without a built system. Useful for governance design workshops, policy documents, and regulatory submissions."
+    }
+  },
+
   "emergency_circuit_breaker": {
     "description": "Immediate halt mechanism that bypasses the version lifecycle when active harm is detected. Separate from normal threshold escalation — this is the fire alarm, not the thermostat.",
     "trigger_conditions": [
