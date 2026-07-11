@@ -37,8 +37,54 @@
     { "id": 13, "name": "Deployment Gate", "phase": "deploy", "goal": "Go/no-go decision. Run 7-layer freeze validation.", "rules": ["No deploy if critical test fails", "No deploy if TBD in roster", "Must have deployment level + rationale", "HCI must meet minimum"], "thresholds": ["Level 1 + residue >3 → block", ">1 threshold PENDING → block", "Exceeds temporal condition → block (stale)"] },
     { "id": 14, "name": "Performance Monitor", "phase": "evolve", "goal": "Track agent effectiveness across runs", "rules": ["Never modify frozen agent", "Never discard data", "Normalize cross-domain comparisons"], "thresholds": ["Rejection >30% → flag revision", "Threshold fires >50% → recalibrate", "Latency >3x median → optimize"] },
     { "id": 15, "name": "Version Controller", "phase": "evolve", "goal": "Freeze versions, track lineage, gate releases", "rules": ["Frozen = immutable", "A/B validation required", "Documented reason from Monitor", "One agent change per increment"], "thresholds": [">5 changes pending → force review", "A/B regression → block", "6 months stale + degrading → flag"] },
-    { "id": 16, "name": "Evolution Agent", "phase": "evolve", "goal": "Write improved prompts/configs from Monitor findings", "rules": ["Never change goal without human", "Preserve rules unless deprecated", "Data-justified thresholds only", "Self-validate via Agent 6", "Never remove productive threshold"], "thresholds": ["Affects >3 agents → full re-validation", "Contradicts root rule → escalate", "Not A/B testable → defer"] }
+    { "id": 16, "name": "Evolution Agent", "phase": "evolve", "goal": "Write improved prompts/configs from Monitor findings", "rules": ["Never change goal without human", "Preserve rules unless deprecated", "Data-justified thresholds only", "Self-validate via Agent 6", "Never remove productive threshold"], "thresholds": ["Affects >3 agents → full re-validation", "Contradicts root rule → escalate", "Not A/B testable → defer"] },
+    { "id": 17, "name": "Truth Conflict Resolver", "phase": "define+deploy", "goal": "Resolve contradictions between truth layers when they produce conflicting requirements", "rules": ["Never optimize one layer while silently violating another", "Every resolution must document the tradeoff explicitly", "Every resolution must name the authority owner who approved it", "Never resolve a Meta vs Civilizational conflict without governance review", "Never resolve by eliminating a layer — all layers have standing"], "thresholds": [">2 unresolved layer conflicts in same GRD → human escalation", "Meta vs Civilizational conflict → mandatory governance board review", "Resolution that degrades any layer metric >20% → block until authority approves", "Same conflict recurs across >3 versions → structural redesign needed"] },
+    { "id": 18, "name": "Reality Feedback Agent", "phase": "post-deploy", "goal": "Compare predicted outcomes with actual outcomes. Feed environmental reality back into the chain.", "rules": ["Must measure prediction accuracy at declared cadence", "Never ignore outcome data that contradicts the GRD's assumptions", "Must distinguish system-caused outcomes from environmental changes", "Never attribute external events to system behavior without evidence"], "thresholds": ["Prediction error >20% on any GRD-declared metric → trigger evolution review", "Unexpected consequence not covered by any rule → flag for Rule Derivation (Agent 3)", "Residue domain impact higher than weight predicted → recalibrate reason weights", ">3 consecutive measurement periods with degrading accuracy → HALT and reassess"] }
   ],
+
+  "human_authority_map": {
+    "description": "Formalized authority routing for all governance decisions. Every escalation, override, and deployment decision maps to a named role.",
+    "roles": {
+      "threshold_owner": {
+        "role": "Domain Expert / Category Buyer",
+        "authority": "Approve or override individual threshold-triggered escalations",
+        "examples": ["T1 fires → category buyer reviews data vintage", "T3 fires → finance director reviews high-value contract"]
+      },
+      "override_owner": {
+        "role": "Senior Decision Maker",
+        "authority": "Override any recommendation when buyer judgment supersedes model output",
+        "examples": ["VP Procurement overrides supplier ranking for strategic reasons"]
+      },
+      "ethical_escalation": {
+        "role": "AI Governance Council / Ethics Board",
+        "authority": "Resolve Meta vs Civilizational conflicts. Approve goal-level changes. Review incentive mapping.",
+        "examples": ["Diversity vs cost-optimization tradeoff", "Accuracy vs explainability conflict"]
+      },
+      "deployment_owner": {
+        "role": "Product Owner / Technical Lead",
+        "authority": "Final go/no-go on deployment. Owns the 7-layer freeze ceremony sign-off.",
+        "examples": ["Approves v1.0 freeze after all layers pass"]
+      },
+      "evolution_approver": {
+        "role": "Governance Board + Technical Lead",
+        "authority": "Approve major version changes (goal changes, agent restructuring). Gate for Evolution Agent proposals.",
+        "examples": ["Approve adding Agent 17", "Approve deprecating a rule"]
+      },
+      "reality_reviewer": {
+        "role": "Operations / Domain Expert",
+        "authority": "Validate Reality Feedback Agent findings. Confirm whether outcome divergence is system-caused or environmental.",
+        "examples": ["Supplier failure increase — is it our model or market conditions?"]
+      }
+    },
+    "escalation_chain": [
+      "threshold_owner → override_owner → ethical_escalation → deployment_owner",
+      "Any agent threshold fire → threshold_owner",
+      "Meta/Civilizational conflict → ethical_escalation",
+      "Version freeze → deployment_owner",
+      "Goal change → evolution_approver",
+      "Reality divergence → reality_reviewer → evolution_approver"
+    ]
+  },
 
   "root_grd": {
     "goal": "Given a domain/problem, produce a verified GRD + governed system + tested deployment. All agents governed. All versions truth-validated.",
