@@ -86,6 +86,106 @@
     ]
   },
 
+  "weighted_goals": {
+    "description": "Every agent's goal is decomposed into weighted sub-objectives. Authorized human contributors can adjust weights through the Authority Dashboard UI. Weight changes are versioned and require the role specified in permission_level.",
+    "schema_per_agent": {
+      "agent_id": "number",
+      "goal_weights": [
+        {
+          "sub_goal_id": "string",
+          "description": "string",
+          "weight": "0.0 to 1.0",
+          "permission_level": "threshold_owner | override_owner | ethical_escalation | deployment_owner | evolution_approver",
+          "last_modified_by": "string (role + name)",
+          "last_modified_at": "ISO8601",
+          "weight_history": [{ "weight": "number", "changed_by": "string", "timestamp": "ISO8601", "reason": "string" }]
+        }
+      ],
+      "constraint": "All weights must sum to 1.0 within each agent. The UI enforces this via normalization."
+    },
+    "example_agent_2_goal_architect": {
+      "agent_id": 2,
+      "goal_weights": [
+        { "sub_goal_id": "frame_origin", "description": "Name the frame owner clearly", "weight": 0.20, "permission_level": "ethical_escalation" },
+        { "sub_goal_id": "residue_declaration", "description": "Declare what the model cannot see", "weight": 0.20, "permission_level": "threshold_owner" },
+        { "sub_goal_id": "incentive_mapping", "description": "Map who pays and who benefits", "weight": 0.15, "permission_level": "ethical_escalation" },
+        { "sub_goal_id": "non_goals", "description": "Specify what must not be optimized", "weight": 0.20, "permission_level": "override_owner" },
+        { "sub_goal_id": "temporal_condition", "description": "Set expiry and revision triggers", "weight": 0.10, "permission_level": "deployment_owner" },
+        { "sub_goal_id": "composability", "description": "Map adjacent governance domains", "weight": 0.15, "permission_level": "deployment_owner" }
+      ]
+    },
+    "example_agent_12_testing": {
+      "agent_id": 12,
+      "goal_weights": [
+        { "sub_goal_id": "honest_reporting", "description": "Never suppress or minimize failures", "weight": 0.30, "permission_level": "ethical_escalation" },
+        { "sub_goal_id": "grd_mapping", "description": "Map every failure to a specific GRD violation", "weight": 0.25, "permission_level": "threshold_owner" },
+        { "sub_goal_id": "proxy_monitoring", "description": "Report proxy influence percentage", "weight": 0.25, "permission_level": "override_owner" },
+        { "sub_goal_id": "coverage_completeness", "description": "Ensure all rules and thresholds are tested", "weight": 0.20, "permission_level": "deployment_owner" }
+      ]
+    },
+    "weight_change_rules": [
+      "Only the role specified in permission_level can change that sub-goal's weight",
+      "All weight changes are logged with reason, timestamp, and identity",
+      "Weights must sum to 1.0 — changing one redistributes across others (UI handles normalization)",
+      "A weight change >0.15 in a single adjustment requires evolution_approver approval",
+      "Weight changes take effect on the NEXT run — never mid-execution",
+      "Weight changes to a frozen version create a new patch version (x.x.+1)"
+    ]
+  },
+
+  "authority_dashboard_ui": {
+    "description": "A web UI where authorized human contributors view and adjust agent goal weights, review escalations, approve version changes, and monitor the chain.",
+    "access_control": {
+      "authentication": "Role-based login. Each user maps to one or more authority_map roles.",
+      "authorization": "Users can only modify weights where their role matches the sub-goal's permission_level.",
+      "audit_trail": "Every action is logged: who, what, when, why."
+    },
+    "panels": [
+      {
+        "name": "Agent Overview",
+        "description": "See all 19 agents, their current phase, status (idle/running/blocked/completed), and performance summary.",
+        "actions": ["View agent details", "See threshold fire history", "View learning log"]
+      },
+      {
+        "name": "Weight Tuning",
+        "description": "For each agent, see sub-goals as sliders. Only sliders the user's role permits are editable. Others are read-only.",
+        "actions": ["Adjust weights (sliders normalize to 1.0)", "Add reason for change", "Preview impact (what would change in next run)"],
+        "constraints": ["Sum must equal 1.0", "Change >0.15 requires secondary approval", "Shows weight history timeline"]
+      },
+      {
+        "name": "Escalation Queue",
+        "description": "Pending escalations from agents that fired thresholds requiring human input.",
+        "actions": ["Approve/reject escalation", "Provide resolution with rationale", "Route to different authority if needed"],
+        "shows": ["Which agent escalated", "Which threshold fired", "Which truth layer is affected", "Recommended action"]
+      },
+      {
+        "name": "Truth Conflict Queue",
+        "description": "Active truth layer conflicts from Agent 17 requiring resolution.",
+        "actions": ["View conflicting layers", "Choose resolution approach", "Document tradeoff", "Assign authority owner"],
+        "shows": ["Layer A requirement", "Layer B requirement", "Proposed resolutions", "Impact of each option"]
+      },
+      {
+        "name": "Version Control",
+        "description": "View frozen versions, pending proposals from Evolution Agent, A/B test results.",
+        "actions": ["Approve/reject version change", "View diff between versions", "Trigger A/B test", "Force freeze review"],
+        "restricted_to": ["evolution_approver", "deployment_owner"]
+      },
+      {
+        "name": "Reality Dashboard",
+        "description": "Agent 18's findings — predicted vs actual outcomes over time.",
+        "actions": ["View prediction accuracy trends", "Flag divergent metrics", "Trigger evolution review"],
+        "shows": ["Prediction vs reality charts", "Residue impact measurements", "Unexpected consequence log"]
+      },
+      {
+        "name": "7-Layer Validation Status",
+        "description": "Current freeze validation state. Shows which layers pass/fail for the active version.",
+        "actions": ["View per-layer status", "Drill into failures", "Approve layer (if authority permits)"],
+        "shows": ["Layer 1-7 status badges", "Block reasons", "Historical pass rates"]
+      }
+    ],
+    "technology": "Self-contained HTML/JS (like existing dashboards) OR React app with auth backend — TBD based on deployment needs"
+  },
+
   "root_grd": {
     "goal": "Given a domain/problem, produce a verified GRD + governed system + tested deployment. All agents governed. All versions truth-validated.",
     "rules": ["Never deploy without validated GRD", "Never modify frozen agent in-place", "Never skip human review at phase transitions", "Never allow agent self-evaluation without external check"],
