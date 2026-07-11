@@ -6,6 +6,66 @@
   "date": "2026-04-22",
   "description": "A governed chain of AI agents that produces a verified GRD and working governed system. Each agent has its own GRT. Versions are frozen and validated against the 7 Layers of Truth. A self-improvement loop governed by an Evolution Agent updates prompts across versions.",
 
+  "emergency_circuit_breaker": {
+    "description": "Immediate halt mechanism that bypasses the version lifecycle when active harm is detected. Separate from normal threshold escalation — this is the fire alarm, not the thermostat.",
+    "trigger_conditions": [
+      "Reality Feedback Agent detects harm occurring NOW (not predicted — actual)",
+      "Any authority role manually triggers emergency stop",
+      "System output directly contradicts a Meta-layer moral constraint",
+      "Protected-attribute discrimination detected in live production decisions"
+    ],
+    "actions_on_trigger": [
+      "IMMEDIATELY halt all agent execution",
+      "IMMEDIATELY stop the governed system from producing new outputs",
+      "Notify ALL authority roles simultaneously (not escalation chain — broadcast)",
+      "Log the trigger condition with full context for post-mortem",
+      "Require explicit release from deployment_owner + ethical_escalation to resume"
+    ],
+    "cannot_be_overridden_by": ["Evolution Agent", "Version Controller", "Performance Monitor", "any single authority role alone"],
+    "release_requires": "Joint approval from deployment_owner AND ethical_escalation with documented resolution"
+  },
+
+  "rework_protocol": {
+    "description": "Formalized backward loops when a downstream agent discovers a problem requiring upstream rework. The chain doesn't just block — it routes back with a structured request.",
+    "schema": {
+      "requesting_agent": "number (agent ID that found the problem)",
+      "target_agent": "number (agent ID that must redo work)",
+      "failure_description": "string (what specifically failed)",
+      "required_change": "string (what the target agent must produce differently)",
+      "evidence": "string (the data/finding that proves the rework is needed)",
+      "max_rework_iterations": 3,
+      "escalation_if_unresolved": "After 3 rework iterations without resolution → escalate to Truth Conflict Resolver (Agent 17)"
+    },
+    "allowed_backward_routes": [
+      { "from": 6, "to": 3, "reason": "Validator finds rule gap → Rule Derivation adds new rule" },
+      { "from": 6, "to": 4, "reason": "Validator finds threshold contradiction → Threshold Calibrator redesigns" },
+      { "from": 6, "to": 2, "reason": "Validator finds goal incoherence → Goal Architect revises" },
+      { "from": 12, "to": 11, "reason": "Testing Agent finds untestable case → Test Case Author rewrites" },
+      { "from": 12, "to": 10, "reason": "Testing Agent finds connector violation → Connecting Agent fixes" },
+      { "from": 12, "to": 4, "reason": "Testing Agent finds threshold miscalibrated → Threshold Calibrator recalibrates" },
+      { "from": 17, "to": 2, "reason": "Truth Conflict Resolver finds goal must change → Goal Architect revises" },
+      { "from": 18, "to": 16, "reason": "Reality Feedback diverges → Evolution Agent must propose fix" }
+    ]
+  },
+
+  "chain_cost_model": {
+    "description": "Tracks cumulative governance cost per run. Prevents governance from becoming heavier than the thing it governs.",
+    "tracked_metrics": [
+      { "metric": "llm_tokens_total", "unit": "tokens", "description": "Total LLM tokens consumed across all agents in one chain run" },
+      { "metric": "human_review_time", "unit": "minutes", "description": "Total time humans spend reviewing escalations, approving weights, resolving conflicts" },
+      { "metric": "calendar_time", "unit": "hours", "description": "Wall-clock time from chain start to deployment gate" },
+      { "metric": "dollar_cost", "unit": "USD", "description": "Direct cost: LLM API + human labor at loaded rate" },
+      { "metric": "rework_iterations", "unit": "count", "description": "Total backward loops triggered" }
+    ],
+    "thresholds": [
+      { "condition": "Governance cost exceeds 15% of governed system's first-year value", "action": "Flag for simplification — governance is too heavy" },
+      { "condition": "Human review time exceeds 40 hours per run", "action": "Automate more, reduce escalation surface" },
+      { "condition": "Calendar time exceeds 2 weeks for a single GRD production", "action": "Parallelize agents or reduce scope" },
+      { "condition": "Rework iterations >5 in single run", "action": "Structural problem — escalate to Evolution Agent for chain redesign" }
+    ],
+    "cost_benefit_ratio": "Tracked per run. If ratio worsens for >3 consecutive runs → Evolution Agent must address."
+  },
+
   "seven_layers_of_truth": {
     "order": "bottom_to_top",
     "progression": "Quantum > Physical > Biological > Cognitive > Cultural > Civilizational > Meta",
@@ -21,7 +81,7 @@
   },
 
   "agents": [
-    { "id": 0, "name": "Incentive Auditor", "phase": "pre-chain", "goal": "Map incentive structure — who benefits, who pays, where biases accumulate", "rules": ["Run BEFORE chain starts", "Run AFTER each phase", "Never allow self-evaluation"], "thresholds": ["Overconfidence >90% for 5 runs → flag", "Rejection/self-score mismatch → misalignment", "Evolution Agent self-serving → escalate"] },
+    { "id": 0, "name": "Incentive Auditor", "phase": "pre-chain", "goal": "Map incentive structure — who benefits, who pays, where biases accumulate", "rules": ["Run BEFORE chain starts", "Run AFTER each phase", "Never allow self-evaluation", "Must produce quantitative metrics not just qualitative assertions"], "thresholds": ["Overconfidence >90% for 5 runs → flag", "Rejection/self-score mismatch → misalignment", "Evolution Agent self-serving → escalate"], "detection_metrics": { "self_score_vs_acceptance_ratio": "For each agent: ratio of self-assessed confidence to downstream agent acceptance rate. Healthy = close to 1.0. >1.5 = overconfident. <0.5 = underconfident.", "human_override_pattern": "Track which agents get consistently overridden by humans and in which direction (stricter or more lenient). Systematic one-direction override = incentive pressure.", "weight_drift_detection": "Track whether the same authority role always adjusts weights in the same direction across sessions. Consistent downward pressure on honest_reporting = systematic gaming.", "cost_bearer_visibility": "For each rule and threshold: who actually bears the cost when it fires? Is it the same stakeholder every time? If one stakeholder bears >60% of governance cost → flag inequity." } },
     { "id": 1, "name": "Domain Analyst", "phase": "define", "goal": "Extract decision space, stakeholders, data, risks. Classify truth layer.", "rules": ["Never assume data exists", "Never omit cost-bearing stakeholders", "Must identify truth layer"], "thresholds": [">2 unidentifiable stakeholders → escalate", "Unmappable regulation → flag"] },
     { "id": 2, "name": "Goal Architect", "phase": "define", "goal": "Draft Goal with 6 criteria (frame, residue, incentive, non-goals, temporal, composability)", "rules": ["Must name frame owner", "Must set temporal expiry", "Must declare residue"], "thresholds": ["Score <8/12 → iterate", "Non-goals indistinguishable → escalate"] },
     { "id": 3, "name": "Rule Derivation", "phase": "define", "goal": "Derive 3-7 rules with enforcement mechanisms", "rules": ["Every rule testable", "Every rule has enforcement", "Proxy pathways addressed if r>0.05"], "thresholds": ["<3 rules → under-governed", ">7 rules → over-governed", "Untestable rule → escalate"] },
@@ -29,9 +89,9 @@
     { "id": 5, "name": "Residue & HCI Analyst", "phase": "define", "goal": "Map residue domains, reason weights, deployment level, expected HCI", "rules": ["No Level 1 if high residue", "Every domain has weight", "HCI computed before level declared"], "thresholds": ["HCI <0.3 → redesign", "Level conflicts residue → escalate", "Weights >4.0 → simplify"] },
     { "id": 6, "name": "Validator / Adversary", "phase": "define", "goal": "Find gaps and weaknesses. Test against adversarial scenarios.", "rules": ["Test every rule for enforceability", "Never suppress findings", "≥3 adversarial scenarios"], "thresholds": [">3 critical weaknesses → block", "Unblocked proxy → critical", "TBD in roster → block"] },
     { "id": 7, "name": "Finalizer", "phase": "define", "goal": "Produce valid GRD JSON incorporating validation feedback", "rules": ["Must pass schema validation", "Never drop findings without resolution", "Round-trip property preserved"], "thresholds": ["Unresolved critical → refuse", "JSON >50KB → simplify"] },
-    { "id": 8, "name": "UX Architect", "phase": "build", "goal": "Design UI making governance visible and actionable", "rules": ["Every threshold fire visible", "Residue shown before accept", "Override structured", "Never auto-dismiss"], "thresholds": ["Override >3 clicks → simplify", "Residue >40% viewport → condense", "Rule without UI → flag"] },
-    { "id": 9, "name": "Connector Identifier", "phase": "build", "goal": "Map all integration points required by GRD", "rules": ["Never assume undocumented API", "Data contract required", "Failure mode defined"], "thresholds": [">3 undocumented assumptions → escalate", "No endpoint for routing → block", "Freshness not guaranteed → flag"] },
-    { "id": 10, "name": "Connecting Agent", "phase": "build", "goal": "Build connectors enforcing authority routing and data contracts", "rules": ["Never bypass roster", "Never swallow overrides", "Auth required", "Health checks required"], "thresholds": ["Silent failure → critical", "Latency >5s → flag", "Retry >3 without escalation → flag"] },
+    { "id": 8, "name": "UX Architect", "phase": "build", "goal": "Design UI making governance visible and actionable", "rules": ["Every threshold fire visible", "Residue shown before accept", "Override structured", "Never auto-dismiss", "Must produce a GRD-to-UI traceability matrix showing which UI element enforces which GRD rule"], "thresholds": ["Override >3 clicks → simplify", "Residue >40% viewport → condense", "Rule without UI → flag", "GRD rule with no traceability to a UI element → BLOCK build"], "enforcement_verification": "After UX design, the Validator (Agent 6) must verify that every GRD rule has a corresponding UI enforcement point. If not, rework back to UX Architect." },
+    { "id": 9, "name": "Connector Identifier", "phase": "build", "goal": "Map all integration points required by GRD", "rules": ["Never assume undocumented API", "Data contract required", "Failure mode defined", "Must produce a connector health specification with SLA for each integration"], "thresholds": [">3 undocumented assumptions → escalate", "No endpoint for routing → block", "Freshness not guaranteed → flag", "No SLA defined for a governance-critical connector → block"] },
+    { "id": 10, "name": "Connecting Agent", "phase": "build", "goal": "Build connectors enforcing authority routing and data contracts", "rules": ["Never bypass roster", "Never swallow overrides", "Auth required", "Health checks required", "Must implement GRD-rule-to-code traceability (each connector method references the GRD rule it enforces)", "Must implement silent-failure detection: if a governance event (threshold fire, override, residue disclosure) fails to propagate, raise an alarm within 30 seconds"], "thresholds": ["Silent failure → critical", "Latency >5s → flag", "Retry >3 without escalation → flag", "Governance event not confirmed within 30s → HALT that transaction path"], "build_verification": "Agent 12 (Testing) must run governance-specific integration tests on every connector before Phase 3 can complete." },
     { "id": 11, "name": "Test Case Author", "phase": "test", "goal": "Write tests verifying governance holds", "rules": ["Every rule has a test", "Every threshold has boundary test", "Every proxy has exclusion test", "Never pass when governance violated", "HCI has property test"], "thresholds": ["Coverage <80% → flag", "No fire-rate test → flag", "Non-deterministic without reason → flag"] },
     { "id": 12, "name": "Testing Agent", "phase": "test", "goal": "Run tests, report honestly, map failures to GRD violations", "rules": ["Never suppress failure", "Never mark known without sign-off", "Never retry >1 without flag", "Report proxy influence every run"], "thresholds": [">2 critical failures → HALT", "Fire rate deviates >20% → recalibrate", "HCI drops below target → escalate"] },
     { "id": 13, "name": "Deployment Gate", "phase": "deploy", "goal": "Go/no-go decision. Run 7-layer freeze validation.", "rules": ["No deploy if critical test fails", "No deploy if TBD in roster", "Must have deployment level + rationale", "HCI must meet minimum"], "thresholds": ["Level 1 + residue >3 → block", ">1 threshold PENDING → block", "Exceeds temporal condition → block (stale)"] },
@@ -129,7 +189,10 @@
       "Weights must sum to 1.0 — changing one redistributes across others (UI handles normalization)",
       "A weight change >0.15 in a single adjustment requires evolution_approver approval",
       "Weight changes take effect on the NEXT run — never mid-execution",
-      "Weight changes to a frozen version create a new patch version (x.x.+1)"
+      "Weight changes to a frozen version create a new patch version (x.x.+1)",
+      "WEIGHT FLOOR: No sub-goal weight can drop below 0.05 regardless of authority. This prevents slow walk-down attacks where multiple small reductions effectively zero out a critical sub-goal.",
+      "CUMULATIVE DRIFT PROTECTION: If a sub-goal's weight has been reduced >3 times in the same direction without increase, flag for Incentive Auditor review",
+      "CRITICAL SUB-GOALS: Sub-goals tagged 'integrity_critical' (e.g., honest_reporting on Agent 12) have a floor of 0.15, not 0.05. These cannot be reduced below 15% of the agent's attention."
     ]
   },
 
