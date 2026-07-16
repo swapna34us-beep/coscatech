@@ -6,7 +6,6 @@ data/treatment_model/
 data/override_log.csv
 data/hci_scores.csv
 !data/README.md
-
 # Python
 __pycache__/
 *.py[cod]
@@ -18,26 +17,21 @@ venv/
 env/
 .pytest_cache/
 .coverage
-
 # Jupyter
 .ipynb_checkpoints/
 *.ipynb_checkpoints
-
 # OS
 .DS_Store
 Thumbs.db
-
 # Editors
 .vscode/
 .idea/
 *.swp
 *.swo
-
 # Secrets
 .env
 *.pem
 *.key
-
 # LaTeX build artifacts (for paper conversion)
 paper/*.aux
 paper/*.log
