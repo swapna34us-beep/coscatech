@@ -1,0 +1,48 @@
+# Data artifacts (regenerable from src/generate_dataset.py)
+data/*.csv
+data/*.json
+data/control_model/
+data/treatment_model/
+data/override_log.csv
+data/hci_scores.csv
+!data/README.md
+
+# Python
+__pycache__/
+*.py[cod]
+*$py.class
+*.egg-info/
+.Python
+.venv/
+venv/
+env/
+.pytest_cache/
+.coverage
+
+# Jupyter
+.ipynb_checkpoints/
+*.ipynb_checkpoints
+
+# OS
+.DS_Store
+Thumbs.db
+
+# Editors
+.vscode/
+.idea/
+*.swp
+*.swo
+
+# Secrets
+.env
+*.pem
+*.key
+
+# LaTeX build artifacts (for paper conversion)
+paper/*.aux
+paper/*.log
+paper/*.out
+paper/*.pdf
+paper/*.bbl
+paper/*.blg
+paper/*.toc
